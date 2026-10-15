@@ -14,15 +14,16 @@ import javafx.scene.layout.*;
 
 /**
  * Degree Audit and Graduation Eligibility evaluation view.
- * Verifies required course completion, credit requirements, and unfulfilled criteria.
+ * Built with Google Material Design 3 (M3) components matching gym-management-system m3fx style.
  */
 public class GraduationView extends VBox {
 
     private final UniversityDataStore store = UniversityDataStore.getInstance();
 
     private final ComboBox<Student> studentCombo = new ComboBox<>();
-    private final Label lblEligibilityBadge = new Label("-");
+    private final Label lblEligibilityBadge = new Label("NO CANDIDATE SELECTED");
     private final Label lblProgramName = new Label("-");
+    private final Label lblRequiredCredits = new Label("-");
     private final Label lblCreditsProgress = new Label("0 / 0 credits");
     private final ProgressBar creditsProgressBar = new ProgressBar(0.0);
     private final ListView<String> completedCoursesList = new ListView<>();
@@ -30,8 +31,7 @@ public class GraduationView extends VBox {
 
     public GraduationView() {
         setSpacing(20);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -42,60 +42,81 @@ public class GraduationView extends VBox {
         // Page header
         VBox titleBox = new VBox(4);
         Label title = new Label("Degree Audit & Graduation Checker");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("Audit student degree progress against required curriculum and credit thresholds");
-        subtitle.getStyleClass().add("header-subtitle");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("Audit student degree progress against required curriculum, credit thresholds, and academic standing");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
 
-        // Selector Bar
+        // Candidate Selector Card (M3 Elevated)
         HBox selectorCard = new HBox(16);
-        selectorCard.getStyleClass().add("card");
+        selectorCard.getStyleClass().add("m3-card-elevated");
         selectorCard.setAlignment(Pos.CENTER_LEFT);
 
-        Label lblSelect = new Label("Select Candidate Student:");
-        lblSelect.getStyleClass().add("card-subtitle");
+        Label iconLabel = new Label("🎓");
+        iconLabel.setStyle("-fx-font-size: 24px;");
 
-        studentCombo.setPrefWidth(340);
+        VBox selectPromptBox = new VBox(2);
+        Label lblSelectTitle = new Label("Candidate Degree Audit");
+        lblSelectTitle.getStyleClass().add("m3-title-medium");
+        Label lblSelectSub = new Label("Select an active student candidate to evaluate graduation criteria");
+        lblSelectSub.getStyleClass().add("m3-body-medium");
+        selectPromptBox.getChildren().addAll(lblSelectTitle, lblSelectSub);
+        HBox.setHgrow(selectPromptBox, Priority.ALWAYS);
+
+        studentCombo.setPrefWidth(360);
         studentCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(Student s) { return s != null ? s.getStudentNumber() + " - " + s.getName() : ""; }
             @Override public Student fromString(String s) { return null; }
         });
         studentCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldV, selected) -> runGraduationAudit(selected));
 
-        selectorCard.getChildren().addAll(lblSelect, studentCombo);
+        Button btnRefreshAudit = new Button("Re-evaluate");
+        btnRefreshAudit.getStyleClass().addAll("m3-button", "m3-button-tonal");
+        btnRefreshAudit.setOnAction(e -> runGraduationAudit(studentCombo.getValue()));
 
-        // Audit Summary Card
-        VBox summaryCard = new VBox(14);
-        summaryCard.getStyleClass().add("card");
+        selectorCard.getChildren().addAll(iconLabel, selectPromptBox, studentCombo, btnRefreshAudit);
 
-        HBox badgeRow = new HBox(20);
-        badgeRow.setAlignment(Pos.CENTER_LEFT);
+        // Audit Summary Card (M3 Elevated)
+        VBox summaryCard = new VBox(16);
+        summaryCard.getStyleClass().add("m3-card-elevated");
 
-        lblEligibilityBadge.setStyle("-fx-font-size: 16px; -fx-padding: 6px 16px;");
+        HBox statusRow = new HBox(24);
+        statusRow.setAlignment(Pos.CENTER_LEFT);
 
-        VBox programInfoBox = new VBox(4);
-        Label lblProgTitle = new Label("Degree Program:");
-        lblProgTitle.getStyleClass().add("card-subtitle");
-        lblProgramName.setStyle("-fx-font-weight: bold; -fx-text-fill: #f8fafc;");
+        lblEligibilityBadge.getStyleClass().addAll("m3-badge");
+        lblEligibilityBadge.setStyle("-fx-font-size: 14px; -fx-padding: 8px 18px;");
+
+        VBox programInfoBox = new VBox(2);
+        Label lblProgTitle = new Label("Degree Program");
+        lblProgTitle.getStyleClass().add("m3-body-medium");
+        lblProgramName.getStyleClass().add("m3-title-medium");
         programInfoBox.getChildren().addAll(lblProgTitle, lblProgramName);
+        HBox.setHgrow(programInfoBox, Priority.ALWAYS);
 
-        badgeRow.getChildren().addAll(lblEligibilityBadge, programInfoBox);
+        VBox reqCreditsBox = new VBox(2);
+        reqCreditsBox.setAlignment(Pos.CENTER_RIGHT);
+        Label lblReqTitle = new Label("Degree Minimum Credits");
+        lblReqTitle.getStyleClass().add("m3-body-medium");
+        lblRequiredCredits.getStyleClass().add("m3-title-medium");
+        reqCreditsBox.getChildren().addAll(lblReqTitle, lblRequiredCredits);
+
+        statusRow.getChildren().addAll(lblEligibilityBadge, programInfoBox, reqCreditsBox);
 
         // Progress bar row
-        VBox progressBox = new VBox(6);
+        VBox progressBox = new VBox(8);
         HBox progressLabels = new HBox();
-        Label lblProgessTitle = new Label("Curriculum Credit Completion:");
-        lblProgessTitle.getStyleClass().add("card-subtitle");
-        HBox.setHgrow(lblProgessTitle, Priority.ALWAYS);
-        lblCreditsProgress.setStyle("-fx-font-weight: bold; -fx-text-fill: #38bdf8;");
-        progressLabels.getChildren().addAll(lblProgessTitle, lblCreditsProgress);
+        Label lblProgressTitle = new Label("Curriculum Credit Completion:");
+        lblProgressTitle.getStyleClass().add("m3-body-medium");
+        HBox.setHgrow(lblProgressTitle, Priority.ALWAYS);
+        lblCreditsProgress.setStyle("-fx-font-weight: bold; -fx-text-fill: -md-sys-color-primary; -fx-font-size: 13px;");
+        progressLabels.getChildren().addAll(lblProgressTitle, lblCreditsProgress);
 
         creditsProgressBar.setMaxWidth(Double.MAX_VALUE);
         creditsProgressBar.setPrefHeight(12);
 
         progressBox.getChildren().addAll(progressLabels, creditsProgressBar);
 
-        summaryCard.getChildren().addAll(badgeRow, new Separator(), progressBox);
+        summaryCard.getChildren().addAll(statusRow, new Separator(), progressBox);
 
         // Two columns: Completed Courses vs Unfulfilled Reasons
         HBox splitBox = new HBox(20);
@@ -103,27 +124,37 @@ public class GraduationView extends VBox {
 
         // Left: Completed Courses
         VBox completedCard = new VBox(12);
-        completedCard.getStyleClass().add("card");
+        completedCard.getStyleClass().add("m3-card-elevated");
         HBox.setHgrow(completedCard, Priority.ALWAYS);
 
-        Label lblCompletedTitle = new Label("Completed Courses (Passed)");
-        lblCompletedTitle.getStyleClass().add("card-title");
-        completedCoursesList.setPlaceholder(new Label("No completed courses"));
+        HBox completedHeader = new HBox(8);
+        completedHeader.setAlignment(Pos.CENTER_LEFT);
+        Label lblCompletedIcon = new Label("✅");
+        Label lblCompletedTitle = new Label("Completed Core & Elective Courses");
+        lblCompletedTitle.getStyleClass().add("m3-title-medium");
+        completedHeader.getChildren().addAll(lblCompletedIcon, lblCompletedTitle);
+
+        completedCoursesList.setPlaceholder(new Label("No completed courses recorded for this student"));
         VBox.setVgrow(completedCoursesList, Priority.ALWAYS);
 
-        completedCard.getChildren().addAll(lblCompletedTitle, completedCoursesList);
+        completedCard.getChildren().addAll(completedHeader, completedCoursesList);
 
         // Right: Unfulfilled Requirements
         VBox unfulfilledCard = new VBox(12);
-        unfulfilledCard.getStyleClass().add("card");
+        unfulfilledCard.getStyleClass().add("m3-card-elevated");
         HBox.setHgrow(unfulfilledCard, Priority.ALWAYS);
 
-        Label lblUnfulfilledTitle = new Label("Unfulfilled Requirements & Deficiencies");
-        lblUnfulfilledTitle.getStyleClass().add("card-title");
-        unfulfilledReasonsList.setPlaceholder(new Label("No outstanding deficiencies"));
+        HBox unfulfilledHeader = new HBox(8);
+        unfulfilledHeader.setAlignment(Pos.CENTER_LEFT);
+        Label lblUnfulfilledIcon = new Label("📋");
+        Label lblUnfulfilledTitle = new Label("Audit Findings & Outstanding Deficiencies");
+        lblUnfulfilledTitle.getStyleClass().add("m3-title-medium");
+        unfulfilledHeader.getChildren().addAll(lblUnfulfilledIcon, lblUnfulfilledTitle);
+
+        unfulfilledReasonsList.setPlaceholder(new Label("No outstanding deficiencies — Student cleared!"));
         VBox.setVgrow(unfulfilledReasonsList, Priority.ALWAYS);
 
-        unfulfilledCard.getChildren().addAll(lblUnfulfilledTitle, unfulfilledReasonsList);
+        unfulfilledCard.getChildren().addAll(unfulfilledHeader, unfulfilledReasonsList);
 
         splitBox.getChildren().addAll(completedCard, unfulfilledCard);
 
@@ -132,10 +163,10 @@ public class GraduationView extends VBox {
 
     private void runGraduationAudit(Student student) {
         if (student == null) {
-            lblEligibilityBadge.setText("No Student Selected");
-            lblEligibilityBadge.getStyleClass().clear();
-            lblEligibilityBadge.getStyleClass().add("badge");
+            lblEligibilityBadge.setText("NO CANDIDATE SELECTED");
+            lblEligibilityBadge.getStyleClass().setAll("m3-badge");
             lblProgramName.setText("-");
+            lblRequiredCredits.setText("-");
             lblCreditsProgress.setText("0 / 0 credits");
             creditsProgressBar.setProgress(0.0);
             completedCoursesList.getItems().clear();
@@ -148,20 +179,22 @@ public class GraduationView extends VBox {
 
         int earnedCredits = student.getAcademicRecord().getEarnedCredits();
         int requiredCredits = program.getTotalCreditsRequired();
-        lblCreditsProgress.setText(earnedCredits + " / " + requiredCredits + " credits earned");
+        lblRequiredCredits.setText(requiredCredits + " credits");
+
         double progress = requiredCredits > 0 ? (double) earnedCredits / requiredCredits : 0.0;
+        int pct = (int) Math.round(progress * 100);
+        lblCreditsProgress.setText(earnedCredits + " / " + requiredCredits + " credits earned (" + pct + "%)");
         creditsProgressBar.setProgress(Math.min(1.0, progress));
 
         GraduationReport report = store.getGraduationService().checkGraduationEligibility(student);
 
-        lblEligibilityBadge.getStyleClass().clear();
-        lblEligibilityBadge.getStyleClass().add("badge");
+        lblEligibilityBadge.getStyleClass().setAll("m3-badge");
         if (report.isEligible()) {
             lblEligibilityBadge.setText("✓ GRADUATION ELIGIBLE");
-            lblEligibilityBadge.getStyleClass().add("badge-success");
+            lblEligibilityBadge.getStyleClass().add("m3-badge-success");
         } else {
             lblEligibilityBadge.setText("⚠ REQUIREMENTS PENDING");
-            lblEligibilityBadge.getStyleClass().add("badge-warning");
+            lblEligibilityBadge.getStyleClass().add("m3-badge-warning");
         }
 
         // List completed courses
@@ -172,15 +205,16 @@ public class GraduationView extends VBox {
                     .findFirst()
                     .orElse(null);
             String title = (c != null) ? c.getCourseName() + " (" + c.getCredits() + " cr)" : "";
-            completedCoursesList.getItems().add("✓  " + code + " - " + title);
+            completedCoursesList.getItems().add("✓  " + code + " — " + title);
         }
 
         // List unfulfilled requirements
         unfulfilledReasonsList.getItems().clear();
         if (report.isEligible()) {
-            unfulfilledReasonsList.getItems().add("✓ All required core courses completed.");
-            unfulfilledReasonsList.getItems().add("✓ Minimum degree credit threshold satisfied.");
-            unfulfilledReasonsList.getItems().add("✓ Student is cleared for graduation.");
+            unfulfilledReasonsList.getItems().add("✓ All required core curriculum courses completed.");
+            unfulfilledReasonsList.getItems().add("✓ Minimum degree credit threshold satisfied (" + earnedCredits + "/" + requiredCredits + ").");
+            unfulfilledReasonsList.getItems().add("✓ Student academic standing is in good health.");
+            unfulfilledReasonsList.getItems().add("✓ Cleared for diploma conferral.");
         } else {
             for (String reason : report.getUnfulfilledReasons()) {
                 unfulfilledReasonsList.getItems().add("✗  " + reason);

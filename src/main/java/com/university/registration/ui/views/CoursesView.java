@@ -5,7 +5,6 @@ import com.university.registration.ui.context.UniversityDataStore;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -13,13 +12,10 @@ import javafx.scene.layout.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Course catalog and section schedule view with capacity monitoring
- * and creation dialogs.
+ * Course catalog and section schedule view with Material Design 3 styling.
  */
 public class CoursesView extends VBox {
 
@@ -30,8 +26,7 @@ public class CoursesView extends VBox {
 
     public CoursesView() {
         setSpacing(20);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -44,19 +39,19 @@ public class CoursesView extends VBox {
         topBar.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label("Courses & Schedule");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("Explore course catalog, prerequisites, active sections, and classroom schedules");
-        subtitle.getStyleClass().add("header-subtitle");
+        Label title = new Label("Course Catalog & Schedules");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("Explore curriculum offerings, prerequisite networks, and active section schedules");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
         HBox.setHgrow(titleBox, Priority.ALWAYS);
 
-        Button btnNewCourse = new Button("+ New Course");
-        btnNewCourse.getStyleClass().add("btn-secondary");
+        Button btnNewCourse = new Button("+ Add Course");
+        btnNewCourse.getStyleClass().addAll("m3-button", "m3-button-tonal");
         btnNewCourse.setOnAction(e -> showCreateCourseDialog());
 
-        Button btnNewSection = new Button("+ New Section");
-        btnNewSection.getStyleClass().add("btn-primary");
+        Button btnNewSection = new Button("+ Schedule Section");
+        btnNewSection.getStyleClass().addAll("m3-button", "m3-button-filled");
         btnNewSection.setOnAction(e -> showCreateSectionDialog());
 
         topBar.getChildren().addAll(titleBox, btnNewCourse, btnNewSection);
@@ -65,10 +60,10 @@ public class CoursesView extends VBox {
         setupCoursesTable();
         setupSectionsTable();
 
-        Tab tabCatalog = new Tab("Course Catalog", coursesTable);
+        Tab tabCatalog = new Tab("Course Catalog & Prerequisites", coursesTable);
         tabCatalog.setClosable(false);
 
-        Tab tabSections = new Tab("Active Sections & Schedules", sectionsTable);
+        Tab tabSections = new Tab("Active Scheduled Sections", sectionsTable);
         tabSections.setClosable(false);
 
         tabPane.getTabs().addAll(tabCatalog, tabSections);
@@ -82,26 +77,26 @@ public class CoursesView extends VBox {
         colCode.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCourseCode()));
         colCode.setPrefWidth(120);
 
-        TableColumn<Course, String> colName = new TableColumn<>("COURSE NAME");
+        TableColumn<Course, String> colName = new TableColumn<>("COURSE TITLE");
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCourseName()));
         colName.setPrefWidth(260);
 
         TableColumn<Course, String> colCredits = new TableColumn<>("CREDITS");
         colCredits.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getCredits())));
-        colCredits.setPrefWidth(80);
+        colCredits.setPrefWidth(90);
 
         TableColumn<Course, String> colPrereqs = new TableColumn<>("PREREQUISITES");
         colPrereqs.setCellValueFactory(data -> {
             String prereqs = data.getValue().getPrerequisites().stream()
                     .map(Course::getCourseCode)
                     .collect(Collectors.joining(", "));
-            return new SimpleStringProperty(prereqs.isEmpty() ? "None" : prereqs);
+            return new SimpleStringProperty(prereqs.isEmpty() ? "None Required" : prereqs);
         });
         colPrereqs.setPrefWidth(220);
 
         TableColumn<Course, String> colDesc = new TableColumn<>("DESCRIPTION");
         colDesc.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
-        colDesc.setPrefWidth(340);
+        colDesc.setPrefWidth(360);
 
         coursesTable.getColumns().addAll(colCode, colName, colCredits, colPrereqs, colDesc);
     }
@@ -123,7 +118,7 @@ public class CoursesView extends VBox {
         TableColumn<CourseSection, String> colInstructor = new TableColumn<>("INSTRUCTOR");
         colInstructor.setCellValueFactory(data -> new SimpleStringProperty(
                 data.getValue().getInstructor() != null ? data.getValue().getInstructor().getName() : "Unassigned"));
-        colInstructor.setPrefWidth(160);
+        colInstructor.setPrefWidth(170);
 
         TableColumn<CourseSection, String> colMeetings = new TableColumn<>("MEETING SCHEDULE");
         colMeetings.setCellValueFactory(data -> {
@@ -132,15 +127,15 @@ public class CoursesView extends VBox {
                     .collect(Collectors.joining(", "));
             return new SimpleStringProperty(meetings.isEmpty() ? "TBA" : meetings);
         });
-        colMeetings.setPrefWidth(220);
+        colMeetings.setPrefWidth(230);
 
-        TableColumn<CourseSection, String> colCapacity = new TableColumn<>("SEATS");
+        TableColumn<CourseSection, String> colCapacity = new TableColumn<>("SEAT CAPACITY");
         colCapacity.setCellValueFactory(data -> {
             int enrolled = (int) data.getValue().getEnrollments().stream().filter(Enrollment::isActive).count();
             return new SimpleStringProperty(enrolled + " / " + data.getValue().getCapacity()
                     + " (" + data.getValue().getAvailableSeatsCount() + " free)");
         });
-        colCapacity.setPrefWidth(140);
+        colCapacity.setPrefWidth(160);
 
         sectionsTable.getColumns().addAll(colSecId, colCourse, colSemester, colInstructor, colMeetings, colCapacity);
     }
@@ -161,7 +156,7 @@ public class CoursesView extends VBox {
         TextField txtCode = new TextField();
         txtCode.setPromptText("e.g. CS250");
         TextField txtName = new TextField();
-        txtName.setPromptText("e.g. Web Development");
+        txtName.setPromptText("e.g. Web Applications");
         TextField txtCredits = new TextField("3");
         TextArea txtDesc = new TextArea();
         txtDesc.setPromptText("Course description...");
@@ -180,7 +175,7 @@ public class CoursesView extends VBox {
 
         grid.add(new Label("Course Code:"), 0, 0);
         grid.add(txtCode, 1, 0);
-        grid.add(new Label("Course Name:"), 0, 1);
+        grid.add(new Label("Course Title:"), 0, 1);
         grid.add(txtName, 1, 1);
         grid.add(new Label("Credit Hours:"), 0, 2);
         grid.add(txtCredits, 1, 2);
@@ -272,7 +267,6 @@ public class CoursesView extends VBox {
                         instructorCombo.getValue(),
                         cap
                 );
-                // Default meeting time
                 sec.addMeetingTime(new MeetingTime(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(10, 30)));
                 sec.addMeetingTime(new MeetingTime(DayOfWeek.WEDNESDAY, LocalTime.of(9, 0), LocalTime.of(10, 30)));
 

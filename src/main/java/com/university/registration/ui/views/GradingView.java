@@ -14,8 +14,8 @@ import javafx.scene.layout.*;
 import java.util.List;
 
 /**
- * Grading desk view allowing instructors to view class rosters
- * and record official grades with automatic letter-grade calculation.
+ * Grading desk view styled with Material Design 3 (M3).
+ * Allows instructors to view class rosters and record official grades.
  */
 public class GradingView extends VBox {
 
@@ -36,8 +36,7 @@ public class GradingView extends VBox {
 
     public GradingView() {
         setSpacing(20);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -48,9 +47,9 @@ public class GradingView extends VBox {
         // Page header
         VBox titleBox = new VBox(4);
         Label title = new Label("Instructor Grading Desk");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("Access class rosters and assign final grades to students");
-        subtitle.getStyleClass().add("header-subtitle");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("Select course sections, inspect enrollments, and record final letter grades");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
 
         // Feedback banner
@@ -59,15 +58,15 @@ public class GradingView extends VBox {
         alertBanner.setMaxWidth(Double.MAX_VALUE);
         alertBanner.setWrapText(true);
 
-        // Filter / Selector Card
+        // Filter / Selector Card (M3 Elevated Card)
         HBox selectorsCard = new HBox(16);
-        selectorsCard.getStyleClass().add("card");
+        selectorsCard.getStyleClass().add("m3-card-elevated");
         selectorsCard.setAlignment(Pos.CENTER_LEFT);
 
         VBox instBox = new VBox(6);
-        Label lblInst = new Label("Instructor:");
-        lblInst.getStyleClass().add("card-subtitle");
-        instructorCombo.setPrefWidth(280);
+        Label lblInst = new Label("Instructor Authority:");
+        lblInst.getStyleClass().add("m3-body-medium");
+        instructorCombo.setPrefWidth(290);
         instructorCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(Instructor i) { return i != null ? i.getName() + " (" + i.getDepartment().getCode() + ")" : ""; }
             @Override public Instructor fromString(String s) { return null; }
@@ -76,9 +75,9 @@ public class GradingView extends VBox {
         instBox.getChildren().addAll(lblInst, instructorCombo);
 
         VBox secBox = new VBox(6);
-        Label lblSec = new Label("Assigned Section:");
-        lblSec.getStyleClass().add("card-subtitle");
-        sectionCombo.setPrefWidth(380);
+        Label lblSec = new Label("Taught Course Section:");
+        lblSec.getStyleClass().add("m3-body-medium");
+        sectionCombo.setPrefWidth(390);
         sectionCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(CourseSection s) {
                 return s != null ? s.getSectionId() + " (" + s.getCourse().getCourseCode() + ")" : "";
@@ -103,7 +102,7 @@ public class GradingView extends VBox {
     }
 
     private void setupRosterTable() {
-        TableColumn<Enrollment, String> colStudent = new TableColumn<>("STUDENT");
+        TableColumn<Enrollment, String> colStudent = new TableColumn<>("STUDENT NAME");
         colStudent.setCellValueFactory(data -> {
             Student s = findStudentForEnrollment(data.getValue());
             return new SimpleStringProperty(s != null ? s.getName() : "Unknown");
@@ -115,18 +114,62 @@ public class GradingView extends VBox {
             Student s = findStudentForEnrollment(data.getValue());
             return new SimpleStringProperty(s != null ? s.getStudentNumber() : "-");
         });
-        colNum.setPrefWidth(120);
+        colNum.setPrefWidth(130);
 
         TableColumn<Enrollment, String> colStatus = new TableColumn<>("ENROLLMENT STATUS");
         colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus().name()));
-        colStatus.setPrefWidth(140);
+        colStatus.setPrefWidth(150);
+        colStatus.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(item);
+                    badge.getStyleClass().add("m3-badge");
+                    if ("ENROLLED".equalsIgnoreCase(item)) {
+                        badge.getStyleClass().add("m3-badge-active");
+                    } else if ("COMPLETED".equalsIgnoreCase(item)) {
+                        badge.getStyleClass().add("m3-badge-info");
+                    } else {
+                        badge.getStyleClass().add("m3-badge-danger");
+                    }
+                    setGraphic(badge);
+                    setText(null);
+                }
+            }
+        });
 
         TableColumn<Enrollment, String> colGrade = new TableColumn<>("FINAL GRADE");
         colGrade.setCellValueFactory(data -> {
             Grade g = data.getValue().getGrade();
-            return new SimpleStringProperty(g != null ? g.getLetterGrade() + " (" + g.getScore() + ")" : "Ungraded");
+            return new SimpleStringProperty(g != null ? g.getLetterGrade() + " (" + g.getScore() + ")" : "Pending");
         });
-        colGrade.setPrefWidth(120);
+        colGrade.setPrefWidth(130);
+        colGrade.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(item);
+                    badge.getStyleClass().add("m3-badge");
+                    if ("Pending".equalsIgnoreCase(item)) {
+                        badge.getStyleClass().add("m3-badge-warning");
+                    } else if (item.startsWith("F")) {
+                        badge.getStyleClass().add("m3-badge-danger");
+                    } else {
+                        badge.getStyleClass().add("m3-badge-success");
+                    }
+                    setGraphic(badge);
+                    setText(null);
+                }
+            }
+        });
 
         rosterTable.getColumns().addAll(colStudent, colNum, colStatus, colGrade);
 
@@ -136,17 +179,16 @@ public class GradingView extends VBox {
     }
 
     private void setupGradingCard() {
-        gradingCard.getStyleClass().add("card");
-        gradingCard.setPrefWidth(340);
-        gradingCard.setMinWidth(320);
+        gradingCard.getStyleClass().add("m3-card-elevated");
+        gradingCard.setPrefWidth(350);
+        gradingCard.setMinWidth(330);
 
         Label cardTitle = new Label("Grade Evaluation");
-        cardTitle.getStyleClass().add("card-title");
+        cardTitle.getStyleClass().add("m3-title-medium");
 
-        lblSelectedStudent.getStyleClass().add("card-subtitle");
+        lblSelectedStudent.getStyleClass().add("m3-body-medium");
         lblSelectedStudent.setWrapText(true);
 
-        // Score slider and field synchronization
         scoreSlider.setShowTickLabels(true);
         scoreSlider.setShowTickMarks(true);
         scoreSlider.setMajorTickUnit(25);
@@ -157,7 +199,7 @@ public class GradingView extends VBox {
             updateGradePreview(score);
         });
 
-        scoreField.setPrefWidth(60);
+        scoreField.setPrefWidth(65);
         scoreField.textProperty().addListener((obs, oldV, newV) -> {
             try {
                 int score = Integer.parseInt(newV.trim());
@@ -171,12 +213,12 @@ public class GradingView extends VBox {
         HBox scoreRow = new HBox(12);
         scoreRow.setAlignment(Pos.CENTER_LEFT);
         Label lblScore = new Label("Numeric Score (0-100):");
-        lblScore.getStyleClass().add("card-subtitle");
+        lblScore.getStyleClass().add("m3-body-medium");
         scoreRow.getChildren().addAll(lblScore, scoreField);
 
-        lblCalculatedGrade.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34d399;");
+        lblCalculatedGrade.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -md-sys-color-primary;");
 
-        btnSubmitGrade.getStyleClass().add("btn-primary");
+        btnSubmitGrade.getStyleClass().addAll("m3-button", "m3-button-filled");
         btnSubmitGrade.setMaxWidth(Double.MAX_VALUE);
         btnSubmitGrade.setDisable(true);
         btnSubmitGrade.setOnAction(e -> handleSubmitGrade());
@@ -200,7 +242,7 @@ public class GradingView extends VBox {
         lblCalculatedGrade.setText(letter.name() + " (" + letter.getGradePoints() + " pts) - "
                 + (passing ? "PASSING" : "FAILING"));
         lblCalculatedGrade.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: "
-                + (passing ? "#34d399;" : "#f87171;"));
+                + (passing ? "#16a34a;" : "#dc2626;"));
     }
 
     private void onInstructorChanged(Instructor instructor) {
@@ -288,8 +330,8 @@ public class GradingView extends VBox {
 
     private void showAlert(String message, boolean isError) {
         alertBanner.setText(message);
-        alertBanner.getStyleClass().removeAll("alert-box", "alert-success", "alert-error");
-        alertBanner.getStyleClass().addAll("alert-box", isError ? "alert-error" : "alert-success");
+        alertBanner.getStyleClass().removeAll("m3-alert", "m3-alert-success", "m3-alert-error");
+        alertBanner.getStyleClass().addAll("m3-alert", isError ? "m3-alert-error" : "m3-alert-success");
         alertBanner.setVisible(true);
         alertBanner.setManaged(true);
     }

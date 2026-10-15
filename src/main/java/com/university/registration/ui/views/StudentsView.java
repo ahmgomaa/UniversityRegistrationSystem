@@ -18,11 +18,10 @@ import javafx.scene.layout.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * Student Directory view with searching, profile details,
- * registrar academic standing updates, and advisor assignments.
+ * Student Directory view styled with Material Design 3 (M3).
+ * Features M3 Search Bar, filter chips, profile sheet, and role-authorized dialogs.
  */
 public class StudentsView extends VBox {
 
@@ -30,6 +29,7 @@ public class StudentsView extends VBox {
     private final ObservableList<Student> studentsMasterList = FXCollections.observableArrayList();
     private final TableView<Student> studentsTable = new TableView<>();
     private final TextField searchField = new TextField();
+    private String statusFilter = "ALL";
 
     // Student detail panel
     private final VBox detailPanel = new VBox(14);
@@ -46,8 +46,7 @@ public class StudentsView extends VBox {
 
     public StudentsView() {
         setSpacing(20);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -61,21 +60,43 @@ public class StudentsView extends VBox {
 
         VBox titleBox = new VBox(4);
         Label title = new Label("Student Directory");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("Manage enrolled students, academic standing, and degree programs");
-        subtitle.getStyleClass().add("header-subtitle");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("Browse enrolled candidates, manage academic standing, and assign advisors");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
         HBox.setHgrow(titleBox, Priority.ALWAYS);
 
-        Button btnNewStudent = new Button("+ Add Student");
-        btnNewStudent.getStyleClass().add("btn-primary");
+        Button btnNewStudent = new Button("+ Add New Student");
+        btnNewStudent.getStyleClass().addAll("m3-button", "m3-button-filled");
         btnNewStudent.setOnAction(e -> showAddStudentDialog());
 
         topBar.getChildren().addAll(titleBox, btnNewStudent);
 
-        // Filter / Search bar
-        searchField.setPromptText("🔍 Search student by name or student ID...");
-        searchField.setPrefWidth(350);
+        // M3 Search Bar & Filter Chips Row
+        HBox filterRow = new HBox(16);
+        filterRow.setAlignment(Pos.CENTER_LEFT);
+
+        HBox searchBar = new HBox(10);
+        searchBar.getStyleClass().add("m3-search-bar");
+        searchBar.setAlignment(Pos.CENTER_LEFT);
+        searchBar.setPrefWidth(380);
+
+        Label searchIcon = new Label("🔍");
+        searchField.getStyleClass().add("m3-search-field");
+        searchField.setPromptText("Search by name, student number, email...");
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+        searchBar.getChildren().addAll(searchIcon, searchField);
+
+        // M3 Filter Chips
+        HBox chipsBox = new HBox(8);
+        chipsBox.setAlignment(Pos.CENTER_LEFT);
+        Button chipAll = createFilterChip("All Students", "ALL");
+        Button chipActive = createFilterChip("Active", "ACTIVE");
+        Button chipProbation = createFilterChip("Probation", "PROBATION");
+        Button chipSuspended = createFilterChip("Suspended", "SUSPENDED");
+        chipsBox.getChildren().addAll(chipAll, chipActive, chipProbation, chipSuspended);
+
+        filterRow.getChildren().addAll(searchBar, chipsBox);
 
         // Table setup
         setupTable();
@@ -83,13 +104,35 @@ public class StudentsView extends VBox {
         // Details Side Panel setup
         setupDetailPanel();
 
-        // Main layout: Split between Table (left) and Details panel (right)
+        // Main layout
         HBox mainSplit = new HBox(20);
         HBox.setHgrow(studentsTable, Priority.ALWAYS);
         mainSplit.getChildren().addAll(studentsTable, detailPanel);
         VBox.setVgrow(mainSplit, Priority.ALWAYS);
 
-        getChildren().addAll(topBar, searchField, mainSplit);
+        getChildren().addAll(topBar, filterRow, mainSplit);
+    }
+
+    private Button createFilterChip(String label, String statusKey) {
+        Button chip = new Button(label);
+        chip.getStyleClass().add("m3-chip");
+        if (statusKey.equals(statusFilter)) {
+            chip.getStyleClass().add("m3-chip-selected");
+        }
+        chip.setOnAction(e -> {
+            statusFilter = statusKey;
+            refreshFilterChips((HBox) chip.getParent());
+            applyFilters();
+        });
+        return chip;
+    }
+
+    private void refreshFilterChips(HBox container) {
+        for (var child : container.getChildren()) {
+            if (child instanceof Button btn) {
+                btn.getStyleClass().remove("m3-chip-selected");
+            }
+        }
     }
 
     private void setupTable() {
@@ -97,21 +140,21 @@ public class StudentsView extends VBox {
         colNum.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStudentNumber()));
         colNum.setPrefWidth(120);
 
-        TableColumn<Student, String> colName = new TableColumn<>("NAME");
+        TableColumn<Student, String> colName = new TableColumn<>("FULL NAME");
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        colName.setPrefWidth(160);
+        colName.setPrefWidth(170);
 
-        TableColumn<Student, String> colEmail = new TableColumn<>("EMAIL");
+        TableColumn<Student, String> colEmail = new TableColumn<>("CAMPUS EMAIL");
         colEmail.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmail()));
         colEmail.setPrefWidth(190);
 
-        TableColumn<Student, String> colProgram = new TableColumn<>("PROGRAM");
+        TableColumn<Student, String> colProgram = new TableColumn<>("DEGREE PROGRAM");
         colProgram.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getProgram().getName()));
-        colProgram.setPrefWidth(180);
+        colProgram.setPrefWidth(190);
 
-        TableColumn<Student, String> colStatus = new TableColumn<>("STATUS");
+        TableColumn<Student, String> colStatus = new TableColumn<>("STANDING");
         colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAcademicStatus().name()));
-        colStatus.setPrefWidth(110);
+        colStatus.setPrefWidth(120);
         colStatus.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -121,13 +164,13 @@ public class StudentsView extends VBox {
                     setGraphic(null);
                 } else {
                     Label badge = new Label(item);
-                    badge.getStyleClass().add("badge");
+                    badge.getStyleClass().add("m3-badge");
                     if ("ACTIVE".equalsIgnoreCase(item)) {
-                        badge.getStyleClass().add("badge-active");
+                        badge.getStyleClass().add("m3-badge-active");
                     } else if ("PROBATION".equalsIgnoreCase(item)) {
-                        badge.getStyleClass().add("badge-probation");
+                        badge.getStyleClass().add("m3-badge-probation");
                     } else {
-                        badge.getStyleClass().add("badge-suspended");
+                        badge.getStyleClass().add("m3-badge-suspended");
                     }
                     setGraphic(badge);
                     setText(null);
@@ -138,47 +181,51 @@ public class StudentsView extends VBox {
         TableColumn<Student, String> colGPA = new TableColumn<>("CGPA");
         colGPA.setCellValueFactory(data -> new SimpleStringProperty(
                 String.format("%.2f", data.getValue().getAcademicRecord().calculateCGPA())));
-        colGPA.setPrefWidth(80);
+        colGPA.setPrefWidth(85);
 
         TableColumn<Student, String> colCredits = new TableColumn<>("CREDITS");
         colCredits.setCellValueFactory(data -> new SimpleStringProperty(
                 String.valueOf(data.getValue().getAcademicRecord().getEarnedCredits())));
-        colCredits.setPrefWidth(80);
+        colCredits.setPrefWidth(85);
 
         studentsTable.getColumns().addAll(colNum, colName, colEmail, colProgram, colStatus, colGPA, colCredits);
 
-        FilteredList<Student> filteredData = new FilteredList<>(studentsMasterList, p -> true);
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(student -> {
-                if (newValue == null || newValue.trim().isEmpty()) {
-                    return true;
-                }
-                String lower = newValue.toLowerCase().trim();
-                return student.getName().toLowerCase().contains(lower)
-                        || student.getStudentNumber().toLowerCase().contains(lower)
-                        || student.getEmail().toLowerCase().contains(lower);
-            });
-        });
-        studentsTable.setItems(filteredData);
+        searchField.textProperty().addListener((obs, oldV, newV) -> applyFilters());
 
         studentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, selected) -> {
             displayStudentDetails(selected);
         });
     }
 
-    private void setupDetailPanel() {
-        detailPanel.getStyleClass().add("card");
-        detailPanel.setPrefWidth(320);
-        detailPanel.setMinWidth(300);
+    private void applyFilters() {
+        String query = searchField.getText() != null ? searchField.getText().trim().toLowerCase() : "";
+        FilteredList<Student> filtered = new FilteredList<>(studentsMasterList, s -> {
+            boolean matchesSearch = query.isEmpty()
+                    || s.getName().toLowerCase().contains(query)
+                    || s.getStudentNumber().toLowerCase().contains(query)
+                    || s.getEmail().toLowerCase().contains(query);
 
-        lblDetailName.getStyleClass().add("card-title");
+            boolean matchesStatus = "ALL".equals(statusFilter)
+                    || s.getAcademicStatus().name().equalsIgnoreCase(statusFilter);
+
+            return matchesSearch && matchesStatus;
+        });
+        studentsTable.setItems(filtered);
+    }
+
+    private void setupDetailPanel() {
+        detailPanel.getStyleClass().add("m3-card-elevated");
+        detailPanel.setPrefWidth(330);
+        detailPanel.setMinWidth(310);
+
+        lblDetailName.getStyleClass().add("m3-title-medium");
         lblDetailName.setWrapText(true);
 
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(10);
 
-        grid.add(new Label("Student #:"), 0, 0);
+        grid.add(new Label("Student ID:"), 0, 0);
         grid.add(lblDetailNumber, 1, 0);
         grid.add(new Label("Email:"), 0, 1);
         grid.add(lblDetailEmail, 1, 1);
@@ -188,21 +235,21 @@ public class StudentsView extends VBox {
         grid.add(lblDetailStatus, 1, 3);
         grid.add(new Label("CGPA:"), 0, 4);
         grid.add(lblDetailGPA, 1, 4);
-        grid.add(new Label("Credits:"), 0, 5);
+        grid.add(new Label("Earned Credits:"), 0, 5);
         grid.add(lblDetailCredits, 1, 5);
-        grid.add(new Label("Advisor:"), 0, 6);
+        grid.add(new Label("Academic Advisor:"), 0, 6);
         grid.add(lblDetailAdvisor, 1, 6);
 
         for (int i = 0; i < grid.getChildren().size(); i += 2) {
-            grid.getChildren().get(i).getStyleClass().add("card-subtitle");
+            grid.getChildren().get(i).getStyleClass().add("m3-body-medium");
         }
 
-        btnChangeStanding.getStyleClass().add("btn-secondary");
+        btnChangeStanding.getStyleClass().addAll("m3-button", "m3-button-tonal");
         btnChangeStanding.setMaxWidth(Double.MAX_VALUE);
         btnChangeStanding.setOnAction(e -> showChangeStandingDialog());
         btnChangeStanding.setDisable(true);
 
-        btnAssignAdvisor.getStyleClass().add("btn-secondary");
+        btnAssignAdvisor.getStyleClass().addAll("m3-button", "m3-button-outlined");
         btnAssignAdvisor.setMaxWidth(Double.MAX_VALUE);
         btnAssignAdvisor.setOnAction(e -> showAssignAdvisorDialog());
         btnAssignAdvisor.setDisable(true);
@@ -410,6 +457,7 @@ public class StudentsView extends VBox {
     public void refresh() {
         Student currentSelected = studentsTable.getSelectionModel().getSelectedItem();
         studentsMasterList.setAll(store.getStudentRepository().findAll());
+        applyFilters();
         if (currentSelected != null) {
             store.getStudentRepository().findById(currentSelected.getUserId())
                     .ifPresent(s -> {

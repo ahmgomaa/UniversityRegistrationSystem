@@ -14,13 +14,10 @@ import javafx.scene.layout.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Course Registration Desk view.
- * Allows interactive enrollment and withdrawal, checks prerequisites and capacity,
- * and enforces academic standing and semester deadlines.
+ * Course Registration Desk view with Material Design 3 styling.
+ * Enforces prerequisites, section capacity, student standing, and academic deadlines.
  */
 public class RegistrationView extends VBox {
 
@@ -37,12 +34,11 @@ public class RegistrationView extends VBox {
     private final Label lblCoursePrereqs = new Label("-");
     private final Label lblSectionSeats = new Label("-");
     private final Label lblRegPeriodStatus = new Label("-");
-    private final Button btnWithdraw = new Button("Withdraw Selected Course");
+    private final Button btnWithdraw = new Button("Withdraw Enrollment");
 
     public RegistrationView() {
         setSpacing(20);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -53,9 +49,9 @@ public class RegistrationView extends VBox {
         // Page header
         VBox titleBox = new VBox(4);
         Label title = new Label("Course Registration Desk");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("Enroll students into sections, enforce prerequisites, capacity, and deadlines");
-        subtitle.getStyleClass().add("header-subtitle");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("Perform real-time enrollment checks, validate prerequisites, and manage course drops");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
 
         // Feedback banner
@@ -64,18 +60,18 @@ public class RegistrationView extends VBox {
         alertBanner.setMaxWidth(Double.MAX_VALUE);
         alertBanner.setWrapText(true);
 
-        // Top control card: Selection and Pre-flight checks
+        // Control Card (M3 Elevated Card)
         VBox controlCard = new VBox(16);
-        controlCard.getStyleClass().add("card");
+        controlCard.getStyleClass().add("m3-card-elevated");
 
         HBox selectorsRow = new HBox(16);
         selectorsRow.setAlignment(Pos.CENTER_LEFT);
 
         // Student selector
         VBox studentBox = new VBox(6);
-        Label lblSelectStudent = new Label("Select Student:");
-        lblSelectStudent.getStyleClass().add("card-subtitle");
-        studentCombo.setPrefWidth(280);
+        Label lblSelectStudent = new Label("Select Candidate Student:");
+        lblSelectStudent.getStyleClass().add("m3-body-medium");
+        studentCombo.setPrefWidth(290);
         studentCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(Student s) { return s != null ? s.getStudentNumber() + " - " + s.getName() : ""; }
             @Override public Student fromString(String s) { return null; }
@@ -85,9 +81,9 @@ public class RegistrationView extends VBox {
 
         // Section selector
         VBox sectionBox = new VBox(6);
-        Label lblSelectSection = new Label("Select Course Section:");
-        lblSelectSection.getStyleClass().add("card-subtitle");
-        sectionCombo.setPrefWidth(380);
+        Label lblSelectSection = new Label("Select Target Course Section:");
+        lblSelectSection.getStyleClass().add("m3-body-medium");
+        sectionCombo.setPrefWidth(390);
         sectionCombo.setConverter(new javafx.util.StringConverter<>() {
             @Override public String toString(CourseSection s) {
                 return s != null ? s.getSectionId() + " (" + s.getCourse().getCourseCode() + " - " + s.getCourse().getCourseName() + ")" : "";
@@ -100,8 +96,7 @@ public class RegistrationView extends VBox {
         // Action button
         VBox actionBox = new VBox(6);
         actionBox.setAlignment(Pos.BOTTOM_LEFT);
-        btnRegister.getStyleClass().add("btn-primary");
-        btnRegister.setPrefHeight(36);
+        btnRegister.getStyleClass().addAll("m3-button", "m3-button-filled");
         btnRegister.setOnAction(e -> handleRegister());
         actionBox.getChildren().addAll(new Label(""), btnRegister);
 
@@ -111,16 +106,16 @@ public class RegistrationView extends VBox {
         GridPane preflightGrid = new GridPane();
         preflightGrid.setHgap(24);
         preflightGrid.setVgap(8);
-        preflightGrid.setPadding(new Insets(10, 0, 0, 0));
+        preflightGrid.setPadding(new Insets(6, 0, 0, 0));
 
-        Label lblStandingTitle = new Label("Student Status:");
-        lblStandingTitle.getStyleClass().add("card-subtitle");
-        Label lblPrereqTitle = new Label("Prerequisites:");
-        lblPrereqTitle.getStyleClass().add("card-subtitle");
-        Label lblSeatsTitle = new Label("Seat Availability:");
-        lblSeatsTitle.getStyleClass().add("card-subtitle");
+        Label lblStandingTitle = new Label("Student Standing:");
+        lblStandingTitle.getStyleClass().add("m3-body-medium");
+        Label lblPrereqTitle = new Label("Prerequisite Check:");
+        lblPrereqTitle.getStyleClass().add("m3-body-medium");
+        Label lblSeatsTitle = new Label("Available Capacity:");
+        lblSeatsTitle.getStyleClass().add("m3-body-medium");
         Label lblRegPeriodTitle = new Label("Registration Window:");
-        lblRegPeriodTitle.getStyleClass().add("card-subtitle");
+        lblRegPeriodTitle.getStyleClass().add("m3-body-medium");
 
         preflightGrid.add(lblStandingTitle, 0, 0);
         preflightGrid.add(lblStudentStanding, 1, 0);
@@ -133,19 +128,19 @@ public class RegistrationView extends VBox {
 
         controlCard.getChildren().addAll(selectorsRow, new Separator(), preflightGrid);
 
-        // Student's Current Enrollments Section
-        VBox enrollmentsCard = new VBox(12);
-        enrollmentsCard.getStyleClass().add("card");
+        // Student's Current Enrollments Section (M3 Outlined Card)
+        VBox enrollmentsCard = new VBox(14);
+        enrollmentsCard.getStyleClass().add("m3-card-outlined");
         VBox.setVgrow(enrollmentsCard, Priority.ALWAYS);
 
         HBox enrollmentsHeader = new HBox(16);
         enrollmentsHeader.setAlignment(Pos.CENTER_LEFT);
 
         Label lblEnrollmentsTitle = new Label("Student's Active & Historical Enrollments");
-        lblEnrollmentsTitle.getStyleClass().add("card-title");
+        lblEnrollmentsTitle.getStyleClass().add("m3-title-medium");
         HBox.setHgrow(lblEnrollmentsTitle, Priority.ALWAYS);
 
-        btnWithdraw.getStyleClass().add("btn-danger");
+        btnWithdraw.getStyleClass().addAll("m3-button", "m3-button-danger");
         btnWithdraw.setDisable(true);
         btnWithdraw.setOnAction(e -> handleWithdraw());
 
@@ -159,7 +154,7 @@ public class RegistrationView extends VBox {
     }
 
     private void setupEnrollmentsTable() {
-        TableColumn<Enrollment, String> colSec = new TableColumn<>("SECTION");
+        TableColumn<Enrollment, String> colSec = new TableColumn<>("SECTION ID");
         colSec.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSection().getSectionId()));
         colSec.setPrefWidth(140);
 
@@ -176,7 +171,7 @@ public class RegistrationView extends VBox {
 
         TableColumn<Enrollment, String> colStatus = new TableColumn<>("STATUS");
         colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus().name()));
-        colStatus.setPrefWidth(120);
+        colStatus.setPrefWidth(130);
         colStatus.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -186,13 +181,13 @@ public class RegistrationView extends VBox {
                     setGraphic(null);
                 } else {
                     Label badge = new Label(item);
-                    badge.getStyleClass().add("badge");
+                    badge.getStyleClass().add("m3-badge");
                     if ("ENROLLED".equalsIgnoreCase(item)) {
-                        badge.getStyleClass().add("badge-active");
+                        badge.getStyleClass().add("m3-badge-active");
                     } else if ("COMPLETED".equalsIgnoreCase(item)) {
-                        badge.getStyleClass().add("badge-info");
+                        badge.getStyleClass().add("m3-badge-info");
                     } else {
-                        badge.getStyleClass().add("badge-danger");
+                        badge.getStyleClass().add("m3-badge-danger");
                     }
                     setGraphic(badge);
                     setText(null);
@@ -200,12 +195,12 @@ public class RegistrationView extends VBox {
             }
         });
 
-        TableColumn<Enrollment, String> colGrade = new TableColumn<>("GRADE");
+        TableColumn<Enrollment, String> colGrade = new TableColumn<>("RECORDED GRADE");
         colGrade.setCellValueFactory(data -> {
             Grade g = data.getValue().getGrade();
             return new SimpleStringProperty(g != null ? g.getLetterGrade() + " (" + g.getScore() + ")" : "In Progress");
         });
-        colGrade.setPrefWidth(130);
+        colGrade.setPrefWidth(140);
 
         enrollmentsTable.getColumns().addAll(colSec, colCourse, colTerm, colStatus, colGrade);
 
@@ -222,7 +217,7 @@ public class RegistrationView extends VBox {
         if (student != null) {
             boolean canReg = student.getAcademicStatus().canRegister();
             lblStudentStanding.setText(student.getAcademicStatus().name() + (canReg ? " (Eligible)" : " (Restricted)"));
-            lblStudentStanding.setStyle(canReg ? "-fx-text-fill: #34d399;" : "-fx-text-fill: #f87171;");
+            lblStudentStanding.setStyle(canReg ? "-fx-text-fill: #16a34a; -fx-font-weight: bold;" : "-fx-text-fill: #dc2626; -fx-font-weight: bold;");
             loadStudentEnrollments(student);
         } else {
             lblStudentStanding.setText("-");
@@ -231,20 +226,20 @@ public class RegistrationView extends VBox {
 
         if (section != null) {
             lblSectionSeats.setText(section.getAvailableSeatsCount() + " of " + section.getCapacity() + " available");
-            lblSectionSeats.setStyle(section.hasAvailableSeats() ? "-fx-text-fill: #34d399;" : "-fx-text-fill: #f87171;");
+            lblSectionSeats.setStyle(section.hasAvailableSeats() ? "-fx-text-fill: #16a34a; -fx-font-weight: bold;" : "-fx-text-fill: #dc2626; -fx-font-weight: bold;");
 
             Semester sem = section.getSemester();
             boolean open = sem.isInRegistrationPeriod(today);
             lblRegPeriodStatus.setText((open ? "OPEN" : "CLOSED") + " ("
                     + sem.getRegistrationPeriod().getStartDate().format(DateTimeFormatter.ofPattern("MMM dd")) + " - "
                     + sem.getRegistrationPeriod().getEndDate().format(DateTimeFormatter.ofPattern("MMM dd")) + ")");
-            lblRegPeriodStatus.setStyle(open ? "-fx-text-fill: #34d399;" : "-fx-text-fill: #f87171;");
+            lblRegPeriodStatus.setStyle(open ? "-fx-text-fill: #16a34a; -fx-font-weight: bold;" : "-fx-text-fill: #dc2626; -fx-font-weight: bold;");
 
             if (student != null) {
                 Course course = section.getCourse();
                 if (course.getPrerequisites().isEmpty()) {
                     lblCoursePrereqs.setText("None required ✓");
-                    lblCoursePrereqs.setStyle("-fx-text-fill: #34d399;");
+                    lblCoursePrereqs.setStyle("-fx-text-fill: #16a34a; -fx-font-weight: bold;");
                 } else {
                     boolean allMet = true;
                     StringBuilder sb = new StringBuilder();
@@ -254,7 +249,7 @@ public class RegistrationView extends VBox {
                         sb.append(req.getCourseCode()).append(completed ? " ✓ " : " ✗ ");
                     }
                     lblCoursePrereqs.setText(sb.toString().trim());
-                    lblCoursePrereqs.setStyle(allMet ? "-fx-text-fill: #34d399;" : "-fx-text-fill: #f87171;");
+                    lblCoursePrereqs.setStyle(allMet ? "-fx-text-fill: #16a34a; -fx-font-weight: bold;" : "-fx-text-fill: #dc2626; -fx-font-weight: bold;");
                 }
             } else {
                 lblCoursePrereqs.setText("-");
@@ -307,8 +302,8 @@ public class RegistrationView extends VBox {
 
     private void showAlert(String message, boolean isError) {
         alertBanner.setText(message);
-        alertBanner.getStyleClass().removeAll("alert-box", "alert-success", "alert-error");
-        alertBanner.getStyleClass().addAll("alert-box", isError ? "alert-error" : "alert-success");
+        alertBanner.getStyleClass().removeAll("m3-alert", "m3-alert-success", "m3-alert-error");
+        alertBanner.getStyleClass().addAll("m3-alert", isError ? "m3-alert-error" : "m3-alert-success");
         alertBanner.setVisible(true);
         alertBanner.setManaged(true);
     }

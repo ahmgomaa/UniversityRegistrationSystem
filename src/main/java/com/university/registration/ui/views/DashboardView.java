@@ -1,7 +1,6 @@
 package com.university.registration.ui.views;
 
 import com.university.registration.dto.Notification;
-import com.university.registration.model.CourseSection;
 import com.university.registration.model.Semester;
 import com.university.registration.model.Student;
 import com.university.registration.ui.context.UniversityDataStore;
@@ -10,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -20,8 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Overview dashboard displaying university metrics, current academic session status,
- * and recent real-time system notifications.
+ * Overview dashboard with Material Design 3 cards, metrics, and notification feed.
  */
 public class DashboardView extends VBox {
 
@@ -37,8 +36,7 @@ public class DashboardView extends VBox {
 
     public DashboardView() {
         setSpacing(24);
-        setPadding(new Insets(24));
-        getStyleClass().add("content-area");
+        setPadding(new Insets(10, 0, 24, 0));
 
         initView();
         refresh();
@@ -48,10 +46,10 @@ public class DashboardView extends VBox {
     private void initView() {
         // Page header
         VBox titleBox = new VBox(4);
-        Label title = new Label("University Dashboard");
-        title.getStyleClass().add("header-title");
-        Label subtitle = new Label("System overview, current academic term status, and recent activity");
-        subtitle.getStyleClass().add("header-subtitle");
+        Label title = new Label("Executive Dashboard");
+        title.getStyleClass().add("m3-headline-medium");
+        Label subtitle = new Label("System metrics, active term timeline, and recent campus activity");
+        subtitle.getStyleClass().add("m3-body-medium");
         titleBox.getChildren().addAll(title, subtitle);
 
         // Stats grid
@@ -59,10 +57,10 @@ public class DashboardView extends VBox {
         statsGrid.setHgap(16);
         statsGrid.setVgap(16);
 
-        VBox cardStudents = createStatCard("Total Students", lblStudentsCount, "badge-info");
-        VBox cardCourses = createStatCard("Courses Catalog", lblCoursesCount, "badge-info");
-        VBox cardSections = createStatCard("Active Sections", lblSectionsCount, "badge-info");
-        VBox cardCredits = createStatCard("Total Earned Credits", lblCreditsCount, "badge-success");
+        VBox cardStudents = createStatCard("Total Enrolled Students", lblStudentsCount, "👥");
+        VBox cardCourses = createStatCard("Course Catalog Offerings", lblCoursesCount, "📚");
+        VBox cardSections = createStatCard("Scheduled Course Sections", lblSectionsCount, "🗓️");
+        VBox cardCredits = createStatCard("Completed Quality Credits", lblCreditsCount, "🎖️");
 
         statsGrid.add(cardStudents, 0, 0);
         statsGrid.add(cardCourses, 1, 0);
@@ -77,27 +75,27 @@ public class DashboardView extends VBox {
         HBox bottomSection = new HBox(20);
         bottomSection.setAlignment(Pos.TOP_LEFT);
 
-        // Academic Session Card
+        // Academic Session Card (M3 Elevated Card)
         VBox sessionCard = new VBox(16);
-        sessionCard.getStyleClass().add("card");
+        sessionCard.getStyleClass().add("m3-card-elevated");
         sessionCard.setPrefWidth(420);
 
-        Label sessionHeader = new Label("Current Academic Session");
-        sessionHeader.getStyleClass().add("card-title");
+        Label sessionHeader = new Label("Academic Term Overview");
+        sessionHeader.getStyleClass().add("m3-title-medium");
 
         GridPane sessionDetails = new GridPane();
         sessionDetails.setHgap(16);
         sessionDetails.setVgap(12);
 
-        Label lbl1 = new Label("Simulated Date:");
-        lbl1.getStyleClass().add("card-subtitle");
-        Label lbl2 = new Label("Active Term:");
-        lbl2.getStyleClass().add("card-subtitle");
-        Label lbl3 = new Label("Registration Window:");
-        lbl3.getStyleClass().add("card-subtitle");
+        Label lbl1 = new Label("Current System Date:");
+        lbl1.getStyleClass().add("m3-body-medium");
+        Label lbl2 = new Label("Active Academic Term:");
+        lbl2.getStyleClass().add("m3-body-medium");
+        Label lbl3 = new Label("Registration Status:");
+        lbl3.getStyleClass().add("m3-body-medium");
 
-        lblCurrentDate.setStyle("-fx-font-weight: bold; -fx-text-fill: #38bdf8;");
-        lblCurrentTerm.setStyle("-fx-font-weight: bold; -fx-text-fill: #f8fafc;");
+        lblCurrentDate.setStyle("-fx-font-weight: bold; -fx-text-fill: -md-sys-color-primary;");
+        lblCurrentTerm.setStyle("-fx-font-weight: bold; -fx-text-fill: -md-sys-color-on-surface;");
 
         sessionDetails.add(lbl1, 0, 0);
         sessionDetails.add(lblCurrentDate, 1, 0);
@@ -107,22 +105,22 @@ public class DashboardView extends VBox {
         sessionDetails.add(lblRegStatus, 1, 2);
 
         Label sessionNote = new Label(
-                "💡 Tip: Use the 'Simulated Date' controls in the top bar to test registration rules, late registrations, and withdrawal deadlines.");
+                "💡 Material Design 3 Tip: Switch themes (🌙/☀️) or choose a seed palette (🎨) from the Top App Bar to customize your experience.");
         sessionNote.setWrapText(true);
-        sessionNote.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11px; -fx-padding: 8px 0 0 0;");
+        sessionNote.setStyle("-fx-font-size: 11px; -fx-text-fill: -md-sys-color-on-surface-variant;");
 
-        sessionCard.getChildren().addAll(sessionHeader, sessionDetails, sessionNote);
+        sessionCard.getChildren().addAll(sessionHeader, new Separator(), sessionDetails, sessionNote);
 
-        // Recent System Activity Card
+        // Recent System Activity Card (M3 Outlined Card)
         VBox activityCard = new VBox(12);
-        activityCard.getStyleClass().add("card");
+        activityCard.getStyleClass().add("m3-card-outlined");
         HBox.setHgrow(activityCard, Priority.ALWAYS);
 
-        Label activityHeader = new Label("Live Notifications Stream");
-        activityHeader.getStyleClass().add("card-title");
+        Label activityHeader = new Label("Live Activity Stream");
+        activityHeader.getStyleClass().add("m3-title-medium");
 
-        recentActivityList.setPrefHeight(240);
-        recentActivityList.setPlaceholder(new Label("No recent registration or grading events recorded"));
+        recentActivityList.setPrefHeight(250);
+        recentActivityList.setPlaceholder(new Label("No recent registration or grading events logged"));
 
         activityCard.getChildren().addAll(activityHeader, recentActivityList);
 
@@ -131,15 +129,21 @@ public class DashboardView extends VBox {
         getChildren().addAll(titleBox, statsGrid, bottomSection);
     }
 
-    private VBox createStatCard(String labelText, Label valueLabel, String badgeClass) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("stat-card");
-        valueLabel.getStyleClass().add("stat-value");
+    private VBox createStatCard(String labelText, Label valueLabel, String icon) {
+        VBox card = new VBox(8);
+        card.getStyleClass().add("m3-card-elevated");
 
+        HBox headerRow = new HBox(8);
+        headerRow.setAlignment(Pos.CENTER_LEFT);
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle("-fx-font-size: 18px;");
         Label label = new Label(labelText);
-        label.getStyleClass().add("stat-label");
+        label.getStyleClass().add("m3-body-medium");
+        headerRow.getChildren().addAll(iconLabel, label);
 
-        card.getChildren().addAll(valueLabel, label);
+        valueLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -md-sys-color-primary;");
+
+        card.getChildren().addAll(headerRow, valueLabel);
         return card;
     }
 
@@ -157,7 +161,6 @@ public class DashboardView extends VBox {
         LocalDate today = store.getSimulatedDate();
         lblCurrentDate.setText(today.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")));
 
-        // Check active semester
         Semester currentSemester = store.getSemesters().stream()
                 .filter(s -> !today.isBefore(s.getStartDate()) && !today.isAfter(s.getEndDate()))
                 .findFirst()
@@ -166,19 +169,18 @@ public class DashboardView extends VBox {
         if (currentSemester != null) {
             lblCurrentTerm.setText(currentSemester.toString());
             boolean regOpen = currentSemester.isInRegistrationPeriod(today);
-            lblRegStatus.setText(regOpen ? "● OPEN" : "● CLOSED");
-            lblRegStatus.getStyleClass().removeAll("badge", "badge-success", "badge-danger");
-            lblRegStatus.getStyleClass().addAll("badge", regOpen ? "badge-success" : "badge-danger");
+            lblRegStatus.setText(regOpen ? "● REGISTRATION OPEN" : "● REGISTRATION CLOSED");
+            lblRegStatus.getStyleClass().removeAll("m3-badge", "m3-badge-success", "m3-badge-danger");
+            lblRegStatus.getStyleClass().addAll("m3-badge", regOpen ? "m3-badge-success" : "m3-badge-danger");
         } else {
             lblCurrentTerm.setText("None");
             lblRegStatus.setText("N/A");
         }
 
-        // Recent notifications
         recentActivityList.getItems().clear();
         List<Notification> notes = store.getNotificationService().getNotifications();
         if (notes.isEmpty()) {
-            recentActivityList.getItems().add("System initialized. Ready for operations.");
+            recentActivityList.getItems().add("System initialized. All services operational.");
         } else {
             for (int i = notes.size() - 1; i >= Math.max(0, notes.size() - 8); i--) {
                 recentActivityList.getItems().add(notes.get(i).getMessage());

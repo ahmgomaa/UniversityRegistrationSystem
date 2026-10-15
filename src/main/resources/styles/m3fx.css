@@ -1,0 +1,441 @@
+/* ==========================================================================
+   m3fx.css — Material Design 3 (M3) Component Styles for JavaFX
+   References dynamic -md-sys-color-* theme tokens emitted by M3Theme
+   ========================================================================== */
+
+.root {
+  -fx-font-family: 'Roboto', 'Segoe UI', -apple-system, sans-serif;
+  -fx-background-color: -md-sys-color-surface;
+  -fx-base: -md-sys-color-surface;
+  -fx-background: -md-sys-color-surface;
+  -fx-control-inner-background: -md-sys-color-surface-container;
+  -fx-control-inner-background-alt: -md-sys-color-surface-container-high;
+  -fx-text-base-color: -md-sys-color-on-surface;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-font-size: 13px;
+}
+
+/* ============ Top App Bar ============ */
+.m3-top-app-bar {
+  -fx-background-color: -md-sys-color-surface;
+  -fx-border-color: transparent transparent -md-sys-color-outline-variant transparent;
+  -fx-border-width: 0 0 1 0;
+  -fx-padding: 12px 28px;
+  -fx-alignment: CENTER_LEFT;
+}
+
+.m3-app-title {
+  -fx-font-size: 19px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.m3-app-subtitle {
+  -fx-font-size: 11px;
+  -fx-font-weight: 500;
+  -fx-text-fill: -md-sys-color-primary;
+}
+
+/* ============ Navigation Drawer ============ */
+.m3-nav-drawer {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-pref-width: 270px;
+  -fx-min-width: 270px;
+  -fx-padding: 16px 12px;
+  -fx-border-color: transparent -md-sys-color-outline-variant transparent transparent;
+  -fx-border-width: 0 1 0 0;
+}
+
+.m3-nav-section-title {
+  -fx-font-size: 11px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-padding: 16px 16px 6px 16px;
+}
+
+.m3-nav-item {
+  -fx-background-color: transparent;
+  -fx-background-radius: 28px;
+  -fx-border-radius: 28px;
+  -fx-min-height: 50px;
+  -fx-pref-height: 50px;
+  -fx-padding: 0 18px;
+  -fx-alignment: CENTER_LEFT;
+  -fx-font-size: 14px;
+  -fx-font-weight: 500;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-cursor: hand;
+  -fx-max-width: Infinity;
+}
+
+.m3-nav-item:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.m3-nav-item-active {
+  -fx-background-color: -md-sys-color-secondary-container;
+  -fx-text-fill: -md-sys-color-on-secondary-container;
+  -fx-font-weight: bold;
+}
+
+/* ============ M3 Cards ============ */
+.m3-card {
+  -fx-background-radius: 16px;
+  -fx-padding: 20px;
+}
+
+.m3-card-elevated {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-background-radius: 16px;
+  -fx-padding: 20px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 8, 0, 0, 2);
+}
+
+.m3-card-filled {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+  -fx-background-radius: 16px;
+  -fx-padding: 20px;
+}
+
+.m3-card-outlined {
+  -fx-background-color: -md-sys-color-surface;
+  -fx-background-radius: 16px;
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-radius: 16px;
+  -fx-border-width: 1px;
+  -fx-padding: 20px;
+}
+
+.m3-headline-medium {
+  -fx-font-size: 20px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.m3-title-medium {
+  -fx-font-size: 15px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.m3-body-medium {
+  -fx-font-size: 12px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+}
+
+/* ============ M3 Buttons ============ */
+.m3-button {
+  -fx-cursor: hand;
+  -fx-min-height: 40px;
+  -fx-pref-height: 40px;
+  -fx-background-radius: 20px;
+  -fx-border-radius: 20px;
+  -fx-padding: 0 24px;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+}
+
+.m3-button-filled {
+  -fx-background-color: -md-sys-color-primary;
+  -fx-text-fill: -md-sys-color-on-primary;
+}
+
+.m3-button-filled:hover {
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 6, 0, 0, 2);
+}
+
+.m3-button-tonal {
+  -fx-background-color: -md-sys-color-secondary-container;
+  -fx-text-fill: -md-sys-color-on-secondary-container;
+}
+
+.m3-button-tonal:hover {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+}
+
+.m3-button-outlined {
+  -fx-background-color: transparent;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-width: 1px;
+  -fx-text-fill: -md-sys-color-primary;
+}
+
+.m3-button-outlined:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+}
+
+.m3-button-text {
+  -fx-background-color: transparent;
+  -fx-text-fill: -md-sys-color-primary;
+  -fx-padding: 0 12px;
+}
+
+.m3-button-text:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+}
+
+.m3-button-danger {
+  -fx-background-color: -md-sys-color-error;
+  -fx-text-fill: -md-sys-color-on-error;
+}
+
+/* ============ M3 Search Bar ============ */
+.m3-search-bar {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-background-radius: 28px;
+  -fx-min-height: 52px;
+  -fx-pref-height: 52px;
+  -fx-padding: 0 16px;
+  -fx-alignment: CENTER_LEFT;
+}
+
+.m3-search-field {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-font-size: 14px;
+}
+
+/* ============ M3 Chips ============ */
+.m3-chip {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-radius: 8px;
+  -fx-background-radius: 8px;
+  -fx-padding: 6px 14px;
+  -fx-font-size: 12px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-cursor: hand;
+}
+
+.m3-chip:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+}
+
+.m3-chip-selected {
+  -fx-background-color: -md-sys-color-secondary-container;
+  -fx-border-color: transparent;
+  -fx-text-fill: -md-sys-color-on-secondary-container;
+  -fx-font-weight: bold;
+}
+
+/* ============ Status Badges ============ */
+.m3-badge {
+  -fx-background-radius: 8px;
+  -fx-padding: 4px 10px;
+  -fx-font-size: 11px;
+  -fx-font-weight: bold;
+}
+
+.m3-badge-active, .m3-badge-success {
+  -fx-background-color: rgba(34, 197, 94, 0.18);
+  -fx-text-fill: #16a34a;
+}
+
+.m3-badge-probation, .m3-badge-warning {
+  -fx-background-color: rgba(245, 158, 11, 0.18);
+  -fx-text-fill: #d97706;
+}
+
+.m3-badge-suspended, .m3-badge-danger {
+  -fx-background-color: rgba(239, 68, 68, 0.18);
+  -fx-text-fill: #dc2626;
+}
+
+.m3-badge-info {
+  -fx-background-color: rgba(56, 189, 248, 0.18);
+  -fx-text-fill: #0284c7;
+}
+
+/* ============ Inputs & Controls ============ */
+.text-field, .text-area {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-width: 1px;
+  -fx-border-radius: 8px;
+  -fx-background-radius: 8px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 8px 12px;
+}
+
+.text-field:focused, .text-area:focused {
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-width: 2px;
+}
+
+.combo-box {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-width: 1px;
+  -fx-border-radius: 8px;
+  -fx-background-radius: 8px;
+  -fx-padding: 4px 8px;
+}
+
+.combo-box .cell {
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.combo-box-popup .list-view {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-border-color: -md-sys-color-outline-variant;
+}
+
+.combo-box-popup .list-cell {
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 8px 14px;
+}
+
+.combo-box-popup .list-cell:hover {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+}
+
+.date-picker {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-width: 1px;
+  -fx-border-radius: 8px;
+  -fx-background-radius: 8px;
+}
+
+/* ============ Tables ============ */
+.table-view {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-width: 1px;
+  -fx-border-radius: 12px;
+  -fx-background-radius: 12px;
+}
+
+.table-view .column-header-background {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-border-color: transparent transparent -md-sys-color-outline-variant transparent;
+  -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header {
+  -fx-background-color: transparent;
+  -fx-padding: 12px 10px;
+}
+
+.table-view .column-header .label {
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-font-weight: bold;
+  -fx-font-size: 11px;
+}
+
+.table-row-cell {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-border-color: transparent transparent -md-sys-color-outline-variant transparent;
+  -fx-border-width: 0 0 1 0;
+  -fx-padding: 6px 0;
+}
+
+.table-row-cell:odd {
+  -fx-background-color: -md-sys-color-surface-container;
+}
+
+.table-row-cell:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+}
+
+.table-row-cell:selected {
+  -fx-background-color: -md-sys-color-secondary-container;
+}
+
+.table-cell {
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-alignment: CENTER_LEFT;
+  -fx-padding: 8px 14px;
+}
+
+/* ============ Lists ============ */
+.list-view {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-radius: 10px;
+  -fx-background-radius: 10px;
+}
+
+.list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 10px 14px;
+  -fx-border-color: transparent transparent -md-sys-color-outline-variant transparent;
+  -fx-border-width: 0 0 1 0;
+}
+
+.list-cell:hover {
+  -fx-background-color: -md-sys-color-surface-container-high;
+}
+
+/* ============ Alerts ============ */
+.m3-alert {
+  -fx-background-radius: 12px;
+  -fx-border-radius: 12px;
+  -fx-border-width: 1px;
+  -fx-padding: 14px 18px;
+}
+
+.m3-alert-success {
+  -fx-background-color: rgba(34, 197, 94, 0.16);
+  -fx-border-color: #22c55e;
+  -fx-text-fill: #15803d;
+}
+
+.m3-alert-error {
+  -fx-background-color: rgba(239, 68, 68, 0.16);
+  -fx-border-color: #ef4444;
+  -fx-text-fill: #b91c1c;
+}
+
+/* ============ Progress ============ */
+.progress-bar {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+  -fx-background-radius: 6px;
+}
+
+.progress-bar .bar {
+  -fx-background-color: -md-sys-color-primary;
+  -fx-background-radius: 6px;
+}
+
+/* ============ Sliders ============ */
+.slider .track {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+  -fx-background-radius: 8px;
+  -fx-pref-height: 8px;
+}
+
+.slider .thumb {
+  -fx-background-color: -md-sys-color-primary;
+  -fx-background-radius: 12px;
+  -fx-pref-width: 20px;
+  -fx-pref-height: 20px;
+}
+
+/* ============ Tabs ============ */
+.tab-pane .tab-header-area {
+  -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+  -fx-background-color: transparent;
+  -fx-background-radius: 8px 8px 0 0;
+  -fx-padding: 8px 18px;
+}
+
+.tab-pane .tab:selected {
+  -fx-border-color: transparent transparent -md-sys-color-primary transparent;
+  -fx-border-width: 0 0 3 0;
+}
+
+.tab-pane .tab .tab-label {
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-font-weight: bold;
+}
+
+.tab-pane .tab:selected .tab-label {
+  -fx-text-fill: -md-sys-color-primary;
+}

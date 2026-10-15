@@ -1,11 +1,11 @@
 package com.university.registration.ui;
 
-import com.university.registration.model.Semester;
 import com.university.registration.ui.context.UniversityDataStore;
+import com.university.registration.ui.theme.M3Palette;
+import com.university.registration.ui.theme.ThemeManager;
 import com.university.registration.ui.views.*;
 
 import javafx.application.Application;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -20,203 +20,222 @@ import java.util.Map;
 
 /**
  * Main JavaFX Application for the University Registration System.
- * Coordinates responsive sidebar navigation, global header controls with simulated date,
- * and view transitions.
+ * Styled with Material Design 3 (M3) components, live Light/Dark mode toggling,
+ * dynamic theme seed palettes, and navigation drawer.
  */
 public class UniversityApp extends Application {
 
     private final UniversityDataStore store = UniversityDataStore.getInstance();
+    private final ThemeManager themeManager = ThemeManager.getInstance();
+
     private final BorderPane rootLayout = new BorderPane();
     private final StackPane contentContainer = new StackPane();
     private final Map<String, Node> viewCache = new HashMap<>();
     private final Map<String, Button> navButtons = new HashMap<>();
 
+    private Scene mainScene;
     private Label lblCurrentDate;
     private Label lblNotificationBadge;
+    private Button btnThemeToggle;
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("University Registration & Academic Management System");
-
-        rootLayout.getStyleClass().add("app-container");
+        primaryStage.setTitle("University Registration & Academic Management — Material 3");
 
         // Top bar
-        HBox topBar = createHeaderBar();
+        HBox topBar = createTopAppBar();
         rootLayout.setTop(topBar);
 
-        // Sidebar navigation
-        VBox sidebar = createSidebar();
-        rootLayout.setLeft(sidebar);
+        // M3 Navigation drawer
+        VBox navDrawer = createNavDrawer();
+        rootLayout.setLeft(navDrawer);
 
         // Center content area
-        contentContainer.getStyleClass().add("content-area");
+        contentContainer.setStyle("-fx-padding: 24px;");
         rootLayout.setCenter(contentContainer);
 
         // Switch to initial view
         navigateTo("dashboard");
 
-        Scene scene = new Scene(rootLayout, 1280, 820);
-        // Load CSS stylesheet
-        String cssPath = getClass().getResource("/styles/app.css") != null
-                ? getClass().getResource("/styles/app.css").toExternalForm()
-                : null;
-        if (cssPath != null) {
-            scene.getStylesheets().add(cssPath);
-        }
+        mainScene = new Scene(rootLayout, 1320, 840);
 
-        primaryStage.setScene(scene);
-        primaryStage.setMinWidth(1000);
-        primaryStage.setMinHeight(700);
+        // Apply dynamic M3 theme
+        themeManager.applyTheme(mainScene);
+
+        primaryStage.setScene(mainScene);
+        primaryStage.setMinWidth(1050);
+        primaryStage.setMinHeight(720);
         primaryStage.show();
 
-        // Listen for store changes to update notifications badge and date
         store.addChangeListener(this::updateHeaderIndicators);
         updateHeaderIndicators();
     }
 
-    private HBox createHeaderBar() {
-        HBox header = new HBox(16);
-        header.getStyleClass().add("header-bar");
-        header.setAlignment(Pos.CENTER_RIGHT);
+    private HBox createTopAppBar() {
+        HBox bar = new HBox(16);
+        bar.getStyleClass().add("m3-top-app-bar");
+        bar.setAlignment(Pos.CENTER_RIGHT);
 
-        // Left spacer
+        // Left Brand title
+        VBox brandBox = new VBox(2);
+        Label title = new Label("Apex University");
+        title.getStyleClass().add("m3-app-title");
+        Label subtitle = new Label("Academic Management & Registration System");
+        subtitle.getStyleClass().add("m3-app-subtitle");
+        brandBox.getChildren().addAll(title, subtitle);
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Simulated date controls widget
-        HBox dateWidget = new HBox(10);
+        HBox dateWidget = new HBox(8);
         dateWidget.setAlignment(Pos.CENTER_LEFT);
-        dateWidget.setStyle("-fx-background-color: #1a2333; -fx-padding: 6px 14px; -fx-background-radius: 8px; -fx-border-color: #273852; -fx-border-radius: 8px;");
+        dateWidget.getStyleClass().add("m3-chip");
 
         Label dateIcon = new Label("📅");
-        Label datePrefix = new Label("System Date:");
-        datePrefix.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 11px;");
-
         lblCurrentDate = new Label();
-        lblCurrentDate.setStyle("-fx-text-fill: #38bdf8; -fx-font-weight: bold; -fx-font-size: 12px;");
+        lblCurrentDate.setStyle("-fx-font-weight: bold; -fx-text-fill: -md-sys-color-primary;");
 
         DatePicker datePicker = new DatePicker(store.getSimulatedDate());
-        datePicker.setPrefWidth(125);
+        datePicker.setPrefWidth(120);
         datePicker.valueProperty().addListener((obs, oldV, newDate) -> {
             if (newDate != null) {
                 store.setSimulatedDate(newDate);
             }
         });
 
-        // Quick simulation presets
         MenuButton presetMenu = new MenuButton("Date Presets");
-        presetMenu.getStyleClass().add("btn-secondary");
+        presetMenu.getStyleClass().addAll("m3-button", "m3-button-text");
 
         MenuItem presetReg = new MenuItem("Fall Reg Open (Aug 15, 2025)");
-        presetReg.setOnAction(e -> {
-            datePicker.setValue(LocalDate.of(2025, 8, 15));
-        });
+        presetReg.setOnAction(e -> datePicker.setValue(LocalDate.of(2025, 8, 15)));
 
-        MenuItem presetTermStart = new MenuItem("Fall Classes Start (Sep 10, 2025)");
-        presetTermStart.setOnAction(e -> {
-            datePicker.setValue(LocalDate.of(2025, 9, 10));
-        });
+        MenuItem presetTermStart = new MenuItem("Fall Term Start (Sep 10, 2025)");
+        presetTermStart.setOnAction(e -> datePicker.setValue(LocalDate.of(2025, 9, 10)));
 
         MenuItem presetWithdrawDeadline = new MenuItem("After Withdraw Deadline (Nov 1, 2025)");
-        presetWithdrawDeadline.setOnAction(e -> {
-            datePicker.setValue(LocalDate.of(2025, 11, 1));
-        });
+        presetWithdrawDeadline.setOnAction(e -> datePicker.setValue(LocalDate.of(2025, 11, 1)));
 
         MenuItem presetSpringReg = new MenuItem("Spring Reg Open (Jan 15, 2026)");
-        presetSpringReg.setOnAction(e -> {
-            datePicker.setValue(LocalDate.of(2026, 1, 15));
-        });
+        presetSpringReg.setOnAction(e -> datePicker.setValue(LocalDate.of(2026, 1, 15)));
 
         presetMenu.getItems().addAll(presetReg, presetTermStart, presetWithdrawDeadline, presetSpringReg);
+        dateWidget.getChildren().addAll(dateIcon, lblCurrentDate, datePicker, presetMenu);
 
-        dateWidget.getChildren().addAll(dateIcon, datePrefix, lblCurrentDate, datePicker, presetMenu);
+        // M3 Seed Color Picker
+        ComboBox<M3Palette.SeedColor> seedCombo = new ComboBox<>();
+        seedCombo.getItems().addAll(M3Palette.SeedColor.values());
+        seedCombo.setValue(themeManager.getSeedColor());
+        seedCombo.setConverter(new javafx.util.StringConverter<>() {
+            @Override public String toString(M3Palette.SeedColor s) { return s != null ? "🎨 " + s.getDisplayName() : ""; }
+            @Override public M3Palette.SeedColor fromString(String s) { return null; }
+        });
+        seedCombo.valueProperty().addListener((obs, oldV, newSeed) -> {
+            if (newSeed != null) {
+                themeManager.setSeedColor(newSeed);
+                if (mainScene != null) themeManager.applyTheme(mainScene);
+            }
+        });
 
-        // Header notifications bell shortcut
+        // M3 Light / Dark Mode Toggle Button
+        btnThemeToggle = new Button("🌙 Dark");
+        btnThemeToggle.getStyleClass().addAll("m3-button", "m3-button-tonal");
+        btnThemeToggle.setOnAction(e -> {
+            themeManager.toggleDarkMode();
+            btnThemeToggle.setText(themeManager.isDarkMode() ? "🌙 Dark" : "☀️ Light");
+            if (mainScene != null) themeManager.applyTheme(mainScene);
+        });
+
+        // Notifications Bell Button
         Button btnBell = new Button("🔔");
-        btnBell.getStyleClass().add("btn-secondary");
+        btnBell.getStyleClass().addAll("m3-button", "m3-button-outlined");
         lblNotificationBadge = new Label("0");
-        lblNotificationBadge.getStyleClass().addAll("badge", "badge-info");
+        lblNotificationBadge.getStyleClass().addAll("m3-badge", "m3-badge-info");
         btnBell.setGraphic(lblNotificationBadge);
         btnBell.setContentDisplay(ContentDisplay.RIGHT);
         btnBell.setOnAction(e -> navigateTo("notifications"));
 
-        header.getChildren().addAll(spacer, dateWidget, btnBell);
-        return header;
+        bar.getChildren().addAll(brandBox, spacer, dateWidget, seedCombo, btnThemeToggle, btnBell);
+        return bar;
     }
 
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(6);
-        sidebar.getStyleClass().add("sidebar");
+    private VBox createNavDrawer() {
+        VBox drawer = new VBox(6);
+        drawer.getStyleClass().add("m3-nav-drawer");
 
-        // Brand
-        VBox brandBox = new VBox(2);
-        brandBox.getStyleClass().add("brand-container");
-        Label brandTitle = new Label("Apex University");
-        brandTitle.getStyleClass().add("brand-title");
-        Label brandSub = new Label("Registration & Academic System");
-        brandSub.getStyleClass().add("brand-subtitle");
-        brandBox.getChildren().addAll(brandTitle, brandSub);
+        Label navSecCore = new Label("CORE PLATFORM");
+        navSecCore.getStyleClass().add("m3-nav-section-title");
 
-        // Navigation sections
-        Label navSecCore = new Label("MAIN");
-        navSecCore.getStyleClass().add("nav-section-title");
+        Button btnDashboard = createNavButton("dashboard", "📊   Dashboard");
+        Button btnStudents = createNavButton("students", "👥   Student Directory");
+        Button btnCourses = createNavButton("courses", "📚   Courses & Schedules");
 
-        Button btnDashboard = createNavButton("dashboard", "📊  Dashboard");
-        Button btnStudents = createNavButton("students", "👥  Student Directory");
-        Button btnCourses = createNavButton("courses", "📚  Courses & Schedules");
+        Label navSecOperations = new Label("REGISTRATION & GRADING");
+        navSecOperations.getStyleClass().add("m3-nav-section-title");
 
-        Label navSecAcademics = new Label("OPERATIONS");
-        navSecAcademics.getStyleClass().add("nav-section-title");
-
-        Button btnRegistration = createNavButton("registration", "📝  Course Registration");
-        Button btnGrading = createNavButton("grading", "🎓  Instructor Grading");
+        Button btnRegistration = createNavButton("registration", "📝   Course Registration");
+        Button btnGrading = createNavButton("grading", "🎓   Instructor Grading");
 
         Label navSecAudits = new Label("RECORDS & AUDITS");
-        navSecAudits.getStyleClass().add("nav-section-title");
+        navSecAudits.getStyleClass().add("m3-nav-section-title");
 
-        Button btnTranscript = createNavButton("transcript", "📄  Academic Transcripts");
-        Button btnGraduation = createNavButton("graduation", "🏆  Graduation Checker");
-        Button btnNotifications = createNavButton("notifications", "🔔  System Notifications");
+        Button btnTranscript = createNavButton("transcript", "📄   Transcripts & GPA");
+        Button btnGraduation = createNavButton("graduation", "🏆   Graduation Checker");
+        Button btnNotifications = createNavButton("notifications", "🔔   System Notifications");
 
-        sidebar.getChildren().addAll(
-                brandBox,
+        Region bottomSpacer = new Region();
+        VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
+
+        // Bottom User Profile Card
+        VBox userCard = new VBox(4);
+        userCard.getStyleClass().add("m3-card-filled");
+        userCard.setStyle("-fx-padding: 12px; -fx-background-radius: 12px;");
+
+        Label lblUser = new Label("Sarah Connor");
+        lblUser.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: -md-sys-color-on-surface;");
+        Label lblRole = new Label("● REGISTRAR");
+        lblRole.getStyleClass().addAll("m3-badge", "m3-badge-info");
+        userCard.getChildren().addAll(lblUser, lblRole);
+
+        drawer.getChildren().addAll(
                 navSecCore,
                 btnDashboard,
                 btnStudents,
                 btnCourses,
-                navSecAcademics,
+                navSecOperations,
                 btnRegistration,
                 btnGrading,
                 navSecAudits,
                 btnTranscript,
                 btnGraduation,
-                btnNotifications
+                btnNotifications,
+                bottomSpacer,
+                userCard
         );
 
-        return sidebar;
+        return drawer;
     }
 
     private Button createNavButton(String viewId, String label) {
         Button btn = new Button(label);
-        btn.getStyleClass().add("nav-button");
+        btn.getStyleClass().add("m3-nav-item");
         btn.setOnAction(e -> navigateTo(viewId));
         navButtons.put(viewId, btn);
         return btn;
     }
 
     private void navigateTo(String viewId) {
-        // Highlight active nav button
+        // Highlight active nav button with M3 active indicator pill
         for (Map.Entry<String, Button> entry : navButtons.entrySet()) {
             if (entry.getKey().equals(viewId)) {
-                if (!entry.getValue().getStyleClass().contains("nav-button-active")) {
-                    entry.getValue().getStyleClass().add("nav-button-active");
+                if (!entry.getValue().getStyleClass().contains("m3-nav-item-active")) {
+                    entry.getValue().getStyleClass().add("m3-nav-item-active");
                 }
             } else {
-                entry.getValue().getStyleClass().remove("nav-button-active");
+                entry.getValue().getStyleClass().remove("m3-nav-item-active");
             }
         }
 
-        // Lazy-load view into container
         Node view = viewCache.computeIfAbsent(viewId, this::createViewInstance);
         contentContainer.getChildren().setAll(view);
     }
