@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/src/main/java/com/university/registration/repository/mysql/JdbcProgramRepository.java" value="4ece02cc-e967-4d6b-8117-33d023590456" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/schema.sql" value="4ece02cc-e967-4d6b-8117-33d023590456" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/seed.sql" value="4ece02cc-e967-4d6b-8117-33d023590456" />
+  </component>
+</project>
