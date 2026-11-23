@@ -46,6 +46,17 @@ Layered architecture — each layer depends only on the layers below it.
 
 The full design — class structure, relationships, the 13-table database schema, and the object-oriented concepts applied — is in [`docs/Project_Report.md`](docs/Project_Report.md). The class diagram is in [`UML-diagram.pdf`](UML-diagram.pdf).
 
+## Run the JavaFX UI
+
+The graphical interface (iOS / Cupertino style, AtlantaFX) is on the
+`javafx-ui` branch. Run it with:
+
+```bash
+mvn javafx:run
+```
+
+The console version still works as before: `mvn exec:java` runs `Main`.
+
 ## Requirements
 
 - Java
