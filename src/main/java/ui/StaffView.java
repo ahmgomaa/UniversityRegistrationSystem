@@ -6,8 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import model.AcademicStaff;
 import model.CourseSection;
@@ -19,9 +20,18 @@ import service.GradingService.RosterEntry;
 import java.util.ArrayList;
 
 /**
- * Academic staff portal: view all students, update a student's academic
- * status (registrar), assign an advisor (advisor), view a section roster
- * (registrar). The role checks live in the model and services.
+ * Academic staff portal, one panel at a time: pick a task in the side
+ * navigation, then pick a student, then the action for that student
+ * appears. Nothing else is on screen. Every panel is built fresh
+ * from the store and services when it is opened, and every update
+ * is confirmed against the database (see SaveCheck).
+ *
+ * The role checks live in the model and services (only a REGISTRAR
+ * changes status or views a roster, only an ADVISOR can be assigned).
+ *
+ * Controls, layouts and styling are the ones from Lecture 7/8:
+ * BorderPane/VBox, Label/Button/ComboBox/ListView of plain strings,
+ * setOnAction handlers and inline CSS.
  */
 public class StaffView {
 
@@ -29,108 +39,177 @@ public class StaffView {
     private final JavaFxApp app;
     private final AcademicStaff staff;
 
+    private BorderPane root;
+    private String current = "Students";
+    private Student selectedStudent;
+
     public StaffView(AppContext context, JavaFxApp app, AcademicStaff staff) {
         this.context = context;
         this.app = app;
         this.staff = staff;
     }
 
-    public TabPane build() {
-        TabPane tabs = new TabPane();
-        Tab studentsTab = new Tab("Students");
-        studentsTab.setContent(studentsPane());
-        Tab statusTab = new Tab("Update Status");
-        statusTab.setContent(statusPane());
-        Tab advisorTab = new Tab("Assign Advisor");
-        advisorTab.setContent(advisorPane());
-        Tab rosterTab = new Tab("Section Roster");
-        rosterTab.setContent(rosterPane());
-        tabs.getTabs().addAll(studentsTab, statusTab, advisorTab, rosterTab);
-        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        return tabs;
+    /** Side navigation on the left, the open panel in the centre. */
+    public BorderPane build() {
+        root = new BorderPane();
+
+        VBox nav = new VBox(6);
+        nav.setPadding(new Insets(16, 10, 16, 16));
+        nav.setPrefWidth(180);
+        nav.getChildren().addAll(
+                navItem("staff-nav-students", "Students", this::showStudents),
+                navItem("staff-nav-status", "Update Status", this::showStatusPane),
+                navItem("staff-nav-advisor", "Assign Advisor", this::showAdvisorPane),
+                navItem("staff-nav-roster", "Section Roster", this::showRosterPane));
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+        nav.getChildren().add(spacer);
+        Button signOut = UiKit.plainButton("Sign Out");
+        signOut.setId("staff-signout");
+        signOut.setOnAction(e -> app.signOut());
+        nav.getChildren().add(signOut);
+
+        root.setLeft(nav);
+        showStudents();
+        return root;
     }
 
-    private ComboBox<Student> studentBox() {
-        ComboBox<Student> box = new ComboBox<>(
-                FXCollections.observableArrayList(context.getStore().getStudents()));
-        box.setMaxWidth(Double.MAX_VALUE);
-        box.setCellFactory(list -> new javafx.scene.control.ListCell<Student>() {
-            @Override
-            protected void updateItem(Student student, boolean empty) {
-                super.updateItem(student, empty);
-                setText(empty || student == null ? null
-                        : student.getName() + " (" + student.getUserId() + ")");
-            }
-        });
-        box.setButtonCell(new javafx.scene.control.ListCell<Student>() {
-            @Override
-            protected void updateItem(Student student, boolean empty) {
-                super.updateItem(student, empty);
-                setText(empty || student == null ? null : student.getName());
-            }
-        });
+    private Button navItem(String id, String text, Runnable action) {
+        Button button = UiKit.navButton(text);
+        button.setId(id);
+        button.setOnAction(e -> action.run());
+        return button;
+    }
+
+    private VBox screen(String title, javafx.scene.Node... children) {
+        VBox box = new VBox(12, UiKit.sectionLabel(title));
+        box.getChildren().addAll(children);
+        box.setPadding(new Insets(20));
         return box;
     }
 
-    private VBox studentsPane() {
+    // --------------------------------------------------------------- Students
+
+    /** All students, fresh. Pick one to see what can be done for them. */
+    private void showStudents() {
+        current = "Students";
+        selectedStudent = null;
+
         ArrayList<String> lines = new ArrayList<>();
         for (Student student : context.getStore().getStudents()) {
-            String advisor = student.getAdvisor() == null
-                    ? "No advisor" : student.getAdvisor().getName();
-            lines.add(student.getName() + " (" + student.getUserId() + ")"
-                    + "  •  " + student.getAcademicStatus()
-                    + "  •  CGPA " + UiKit.formatGpa(
-                            student.getAcademicRecord().calculateCGPA())
-                    + "  •  " + student.getProgram().getName()
-                    + "  •  Advisor: " + advisor);
+            lines.add(describe(student));
         }
         if (lines.isEmpty()) {
             lines.add("No students.");
         }
         ListView<String> list = new ListView<>(FXCollections.observableArrayList(lines));
-        list.setPrefHeight(420);
-        Button signOut = UiKit.plainButton("Sign Out");
-        signOut.setOnAction(e -> app.signOut());
-        VBox root = new VBox(12, UiKit.sectionLabel("All students"), list, signOut);
-        root.setPadding(new Insets(20));
-        return root;
+        list.setId("staff-students-list");
+        list.setPrefHeight(300);
+        Label detail = new Label();
+        detail.setWrapText(true);
+        VBox actions = new VBox(12);
+
+        list.getSelectionModel().selectedIndexProperty().addListener(
+                (obs, oldIndex, newIndex) -> {
+                    int index = newIndex.intValue();
+                    ArrayList<Student> students = context.getStore().getStudents();
+                    if (index < 0 || index >= students.size()) {
+                        return;
+                    }
+                    selectedStudent = students.get(index);
+                    detail.setText(describe(selectedStudent)
+                            + "\n\nAdvisor: "
+                            + (selectedStudent.getAdvisor() == null
+                                    ? "None" : selectedStudent.getAdvisor().getName()));
+                    actions.getChildren().clear();
+                    Button statusButton = UiKit.plainButton("Update Status");
+                    statusButton.setId("staff-student-status-button");
+                    statusButton.setOnAction(e -> showStatusPane());
+                    Button advisorButton = UiKit.plainButton("Assign Advisor");
+                    advisorButton.setId("staff-student-advisor-button");
+                    advisorButton.setOnAction(e -> showAdvisorPane());
+                    actions.getChildren().addAll(
+                            UiKit.sectionLabel("Actions for " + selectedStudent.getName()),
+                            statusButton, advisorButton);
+                });
+
+        VBox center = screen("All students", list, detail, actions);
+        root.setCenter(center);
     }
 
-    private VBox statusPane() {
+    private String describe(Student student) {
+        String advisor = student.getAdvisor() == null
+                ? "No advisor" : student.getAdvisor().getName();
+        return student.getName() + " (" + student.getUserId() + ")"
+                + "  •  " + student.getAcademicStatus()
+                + "  •  CGPA " + UiKit.formatGpa(
+                        student.getAcademicRecord().calculateCGPA())
+                + "  •  " + student.getProgram().getName()
+                + "  •  Advisor: " + advisor;
+    }
+
+    // ------------------------------------------------------------ Update status
+
+    /** Pick a student first; the status choice appears only then. */
+    private void showStatusPane() {
+        current = "Update Status";
+
         ComboBox<Student> studentBox = studentBox();
+        studentBox.setId("staff-student-box");
+        if (selectedStudent != null) {
+            studentBox.setValue(selectedStudent);
+        }
         ComboBox<AcademicStatus> statusBox = new ComboBox<>(
                 FXCollections.observableArrayList(AcademicStatus.values()));
+        statusBox.setId("staff-status-box");
         statusBox.setMaxWidth(Double.MAX_VALUE);
-        Label message = new Label();
-        message.setWrapText(true);
+        Label status = UiKit.statusLabel();
 
+        VBox center = screen("Update status",
+                UiKit.sectionLabel("Student"), studentBox,
+                UiKit.sectionLabel("New status (registrar only)"), statusBox);
         Button updateButton = UiKit.primaryButton("Update Status");
+        updateButton.setId("staff-update-button");
         updateButton.setOnAction(e -> {
             Student student = studentBox.getValue();
-            AcademicStatus status = statusBox.getValue();
-            if (student == null || status == null) {
-                message.setText("Select a student and a status first.");
+            AcademicStatus newStatus = statusBox.getValue();
+            if (student == null || newStatus == null) {
+                UiKit.showStatus(status, false, "Select a student and a status first.");
                 return;
             }
             try {
-                student.updateAcademicStatus(staff, status);
+                student.updateAcademicStatus(staff, newStatus);
                 context.getStore().save();
-                message.setText("Updated status for " + student.getName() + " to " + status + ".");
+                String advisorId = student.getAdvisor() == null
+                        ? null : student.getAdvisor().getUserId();
+                if (SaveCheck.studentSaved(student.getUserId(),
+                        newStatus.name(), advisorId)) {
+                    UiKit.showStatus(status, true, "Updated status for "
+                            + student.getName() + " to " + newStatus + ".");
+                } else {
+                    UiKit.showStatus(status, false,
+                            "Updated in the app, but the database did not confirm "
+                                    + "the save — it may be lost when you sign out.");
+                }
             } catch (IllegalArgumentException ex) {
-                message.setText(ex.getMessage());
+                UiKit.showStatus(status, false, ex.getMessage());
             }
         });
-
-        VBox root = new VBox(12,
-                UiKit.sectionLabel("Student"), studentBox,
-                UiKit.sectionLabel("New status (registrar only)"), statusBox,
-                updateButton, message);
-        root.setPadding(new Insets(20));
-        return root;
+        center.getChildren().addAll(updateButton, status);
+        root.setCenter(center);
     }
 
-    private VBox advisorPane() {
+    // ------------------------------------------------------------ Assign advisor
+
+    /** Pick a student first; the advisor choice appears only then. */
+    private void showAdvisorPane() {
+        current = "Assign Advisor";
+
         ComboBox<Student> studentBox = studentBox();
+        studentBox.setId("staff-student-box");
+        if (selectedStudent != null) {
+            studentBox.setValue(selectedStudent);
+        }
         ArrayList<AcademicStaff> advisors = new ArrayList<>();
         for (AcademicStaff member : context.getStore().getStaff()) {
             if (member.hasRole(StaffRole.ADVISOR)) {
@@ -139,61 +218,56 @@ public class StaffView {
         }
         ComboBox<AcademicStaff> advisorBox = new ComboBox<>(
                 FXCollections.observableArrayList(advisors));
+        advisorBox.setId("staff-advisor-box");
         advisorBox.setMaxWidth(Double.MAX_VALUE);
-        Label message = new Label();
-        message.setWrapText(true);
+        Label status = UiKit.statusLabel();
 
+        VBox center = screen("Assign advisor",
+                UiKit.sectionLabel("Student"), studentBox,
+                UiKit.sectionLabel("Advisor"), advisorBox);
         Button assignButton = UiKit.primaryButton("Assign Advisor");
+        assignButton.setId("staff-assign-button");
         assignButton.setOnAction(e -> {
             Student student = studentBox.getValue();
             AcademicStaff advisor = advisorBox.getValue();
             if (student == null || advisor == null) {
-                message.setText("Select a student and an advisor first.");
+                UiKit.showStatus(status, false, "Select a student and an advisor first.");
                 return;
             }
             try {
                 student.assignAdvisor(advisor);
                 context.getStore().save();
-                message.setText("Assigned " + advisor.getName()
-                        + " to " + student.getName() + ".");
+                if (SaveCheck.studentSaved(student.getUserId(),
+                        student.getAcademicStatus().name(), advisor.getUserId())) {
+                    UiKit.showStatus(status, true, "Assigned " + advisor.getName()
+                            + " to " + student.getName() + ".");
+                } else {
+                    UiKit.showStatus(status, false,
+                            "Assigned in the app, but the database did not confirm "
+                                    + "the save — it may be lost when you sign out.");
+                }
             } catch (IllegalArgumentException ex) {
-                message.setText(ex.getMessage());
+                UiKit.showStatus(status, false, ex.getMessage());
             }
         });
-
-        VBox root = new VBox(12,
-                UiKit.sectionLabel("Student"), studentBox,
-                UiKit.sectionLabel("Advisor"), advisorBox,
-                assignButton, message);
-        root.setPadding(new Insets(20));
-        return root;
+        center.getChildren().addAll(assignButton, status);
+        root.setCenter(center);
     }
 
-    private VBox rosterPane() {
+    // ------------------------------------------------------------ Section roster
+
+    /** Pick a section first; its roster appears only then. */
+    private void showRosterPane() {
+        current = "Section Roster";
+
         ComboBox<CourseSection> sectionBox = new ComboBox<>(
                 FXCollections.observableArrayList(context.getStore().getSections()));
+        sectionBox.setId("staff-section-box");
         sectionBox.setMaxWidth(Double.MAX_VALUE);
-        sectionBox.setCellFactory(list -> new javafx.scene.control.ListCell<CourseSection>() {
-            @Override
-            protected void updateItem(CourseSection section, boolean empty) {
-                super.updateItem(section, empty);
-                setText(empty || section == null ? null : BrowseView.describe(section));
-            }
-        });
-        sectionBox.setButtonCell(new javafx.scene.control.ListCell<CourseSection>() {
-            @Override
-            protected void updateItem(CourseSection section, boolean empty) {
-                super.updateItem(section, empty);
-                setText(empty || section == null ? null
-                        : section.getCourse().getCourseCode() + " — Section "
-                                + section.getSectionNo());
-            }
-        });
-
         ListView<String> rosterList = new ListView<>();
+        rosterList.setId("staff-roster-list");
         rosterList.setPrefHeight(380);
-        Label message = new Label();
-        message.setWrapText(true);
+        Label status = UiKit.statusLabel();
 
         sectionBox.setOnAction(e -> {
             CourseSection section = sectionBox.getValue();
@@ -209,7 +283,7 @@ public class StaffView {
                                 + "  •  " + grade);
                     }
                 } catch (IllegalArgumentException ex) {
-                    message.setText(ex.getMessage());
+                    UiKit.showStatus(status, false, ex.getMessage());
                 }
             }
             if (lines.isEmpty()) {
@@ -218,10 +292,15 @@ public class StaffView {
             rosterList.setItems(FXCollections.observableArrayList(lines));
         });
 
-        VBox root = new VBox(12,
+        root.setCenter(screen("Section roster",
                 UiKit.sectionLabel("Section (registrar only)"), sectionBox,
-                UiKit.sectionLabel("Roster"), rosterList, message);
-        root.setPadding(new Insets(20));
-        return root;
+                UiKit.sectionLabel("Roster"), rosterList, status));
+    }
+
+    private ComboBox<Student> studentBox() {
+        ComboBox<Student> box = new ComboBox<>(
+                FXCollections.observableArrayList(context.getStore().getStudents()));
+        box.setMaxWidth(Double.MAX_VALUE);
+        return box;
     }
 }
