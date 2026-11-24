@@ -69,6 +69,35 @@ public final class UiKit {
         return button;
     }
 
+    /** A left-aligned button for the side navigation (one destination each). */
+    public static Button navButton(String text) {
+        Button button = new Button(text);
+        button.setStyle("-fx-background-radius: 8; -fx-padding: 8 12;"
+                + "-fx-alignment: CENTER_LEFT;");
+        button.setMaxWidth(Double.MAX_VALUE);
+        return button;
+    }
+
+    /** An empty feedback line; showStatus fills it after an action. */
+    public static Label statusLabel() {
+        Label label = new Label();
+        label.setWrapText(true);
+        label.setMaxWidth(Double.MAX_VALUE);
+        return label;
+    }
+
+    /** Fill a status line green (saved) or red (failed) after an action. */
+    public static void showStatus(Label label, boolean ok, String text) {
+        label.setText(text);
+        label.setStyle(ok
+                ? "-fx-background-color: #E6F7E6;"
+                        + "-fx-text-fill: #1E7A1E;"
+                        + "-fx-background-radius: 10; -fx-padding: 10 12;"
+                : "-fx-background-color: #FFECEC;"
+                        + "-fx-text-fill: #C00000;"
+                        + "-fx-background-radius: 10; -fx-padding: 10 12;");
+    }
+
     /** A red banner for errors (for example: failed registration rules). */
     public static Label errorBanner(String text) {
         Label label = new Label(text);

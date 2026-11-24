@@ -49,7 +49,8 @@ The full design — class structure, relationships, the 13-table database schema
 ## Run the JavaFX UI
 
 The graphical interface (iOS / Cupertino style, AtlantaFX) is on the
-`javafx-ui` branch. Run it with:
+`javafx-ui-ux` branch (progressive-disclosure redesign of the `javafx-ui`
+version, preserved at tag `javafx-ui-apple-v1`). Run it with:
 
 ```bash
 mvn javafx:run

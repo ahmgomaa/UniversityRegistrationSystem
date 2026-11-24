@@ -30,14 +30,17 @@ public class LoginView {
 
         TextField idField = new TextField();
         idField.setPromptText("User ID (e.g. CS-1001)");
+        idField.setId("login-id-field");
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password (4 digits)");
+        passwordField.setId("login-password-field");
 
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: #C00000;");
         errorLabel.setWrapText(true);
 
         Button signInButton = UiKit.primaryButton("Sign In");
+        signInButton.setId("login-signin-button");
         signInButton.setOnAction(e -> {
             String id = idField.getText() == null ? "" : idField.getText().trim();
             String password = passwordField.getText() == null ? "" : passwordField.getText().trim();
