@@ -42,6 +42,8 @@ public class StaffView {
     private BorderPane root;
     private String current = "Students";
     private Student selectedStudent;
+    private final java.util.Map<String, Button> navButtons =
+            new java.util.LinkedHashMap<>();
 
     public StaffView(AppContext context, JavaFxApp app, AcademicStaff staff) {
         this.context = context;
@@ -78,11 +80,19 @@ public class StaffView {
         Button button = UiKit.navButton(text);
         button.setId(id);
         button.setOnAction(e -> action.run());
+        navButtons.put(text, button);
         return button;
     }
 
+    /** Highlight the open panel in the side navigation. */
+    private void updateNavSelection() {
+        for (java.util.Map.Entry<String, Button> entry : navButtons.entrySet()) {
+            UiKit.setNavSelected(entry.getValue(), entry.getKey().equals(current));
+        }
+    }
+
     private VBox screen(String title, javafx.scene.Node... children) {
-        VBox box = new VBox(12, UiKit.sectionLabel(title));
+        VBox box = new VBox(12, UiKit.title(title));
         box.getChildren().addAll(children);
         box.setPadding(new Insets(20));
         return box;
@@ -93,6 +103,7 @@ public class StaffView {
     /** All students, fresh. Pick one to see what can be done for them. */
     private void showStudents() {
         current = "Students";
+        updateNavSelection();
         selectedStudent = null;
 
         ArrayList<String> lines = new ArrayList<>();
@@ -153,6 +164,7 @@ public class StaffView {
     /** Pick a student first; the status choice appears only then. */
     private void showStatusPane() {
         current = "Update Status";
+        updateNavSelection();
 
         ComboBox<Student> studentBox = studentBox();
         studentBox.setId("staff-student-box");
@@ -188,8 +200,8 @@ public class StaffView {
                             + student.getName() + " to " + newStatus + ".");
                 } else {
                     UiKit.showStatus(status, false,
-                            "Updated in the app, but the database did not confirm "
-                                    + "the save — it may be lost when you sign out.");
+                            "The change was not saved. Try again — if it keeps "
+                                    + "failing, restart the app or contact the registrar.");
                 }
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
@@ -204,6 +216,7 @@ public class StaffView {
     /** Pick a student first; the advisor choice appears only then. */
     private void showAdvisorPane() {
         current = "Assign Advisor";
+        updateNavSelection();
 
         ComboBox<Student> studentBox = studentBox();
         studentBox.setId("staff-student-box");
@@ -243,8 +256,8 @@ public class StaffView {
                             + " to " + student.getName() + ".");
                 } else {
                     UiKit.showStatus(status, false,
-                            "Assigned in the app, but the database did not confirm "
-                                    + "the save — it may be lost when you sign out.");
+                            "The change was not saved. Try again — if it keeps "
+                                    + "failing, restart the app or contact the registrar.");
                 }
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
@@ -259,6 +272,7 @@ public class StaffView {
     /** Pick a section first; its roster appears only then. */
     private void showRosterPane() {
         current = "Section Roster";
+        updateNavSelection();
 
         ComboBox<CourseSection> sectionBox = new ComboBox<>(
                 FXCollections.observableArrayList(context.getStore().getSections()));
