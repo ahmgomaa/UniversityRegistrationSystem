@@ -1,6 +1,8 @@
 package ui;
 
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -25,25 +27,6 @@ import service.ReportService.Transcript;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-/**
- * Student portal, built around one idea: show only what the student
- * needs right now, and fetch the rest when they ask for it.
- *
- * Home shows the essentials only — who they are, one line of progress
- * (CGPA, credits, unread messages), the courses they are in now, and
- * the single next action ("Register for courses"). Transcript,
- * Graduation, Notifications and Settings are not built at login at all:
- * each one is built fresh from the services every time it is opened,
- * so it can never go stale after a register, withdraw or grade.
- *
- * Every action calls the existing services — nothing is reimplemented
- * here — and after every change the affected screen is rebuilt and the
- * result is confirmed against the database (see SaveCheck).
- *
- * Controls, layouts and styling are the ones from Lecture 7/8:
- * BorderPane, VBox, Label, Button, ComboBox, ListView, TextField,
- * setOnAction handlers and inline CSS. No TabPane, no custom cells.
- */
 public class StudentView {
 
     private final AppContext context;
@@ -61,27 +44,70 @@ public class StudentView {
         this.student = student;
     }
 
-    /** Side navigation on the left, the open screen in the centre. */
     public BorderPane build() {
         root = new BorderPane();
 
         VBox nav = new VBox(6);
         nav.setPadding(new Insets(16, 10, 16, 16));
         nav.setPrefWidth(180);
+        nav.setStyle("-fx-background-color: white;"
+                + "-fx-border-color: transparent " + UiKit.SEPARATOR
+                + " transparent transparent;"
+                + "-fx-border-width: 0 1 0 0;");
         nav.getChildren().addAll(
-                navItem("nav-home", "Home", this::showHome),
-                navItem("nav-courses", "My Courses", this::showCourses),
-                navItem("nav-register", "Register", this::showRegister),
-                navItem("nav-transcript", "Transcript", this::showTranscript),
-                navItem("nav-graduation", "Graduation", this::showGraduation),
-                navItem("nav-notifications", "Notifications", this::showNotifications),
-                navItem("nav-settings", "Settings", this::showSettings));
+                navItem("nav-home", "Home", new Runnable() {
+                    @Override
+                    public void run() {
+                        showHome();
+                    }
+                }),
+                navItem("nav-courses", "My Courses", new Runnable() {
+                    @Override
+                    public void run() {
+                        showCourses();
+                    }
+                }),
+                navItem("nav-register", "Register", new Runnable() {
+                    @Override
+                    public void run() {
+                        showRegister();
+                    }
+                }),
+                navItem("nav-transcript", "Transcript", new Runnable() {
+                    @Override
+                    public void run() {
+                        showTranscript();
+                    }
+                }),
+                navItem("nav-graduation", "Graduation", new Runnable() {
+                    @Override
+                    public void run() {
+                        showGraduation();
+                    }
+                }),
+                navItem("nav-notifications", "Notifications", new Runnable() {
+                    @Override
+                    public void run() {
+                        showNotifications();
+                    }
+                }),
+                navItem("nav-settings", "Settings", new Runnable() {
+                    @Override
+                    public void run() {
+                        showSettings();
+                    }
+                }));
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
         nav.getChildren().add(spacer);
         Button signOut = UiKit.plainButton("Sign Out");
         signOut.setId("nav-signout");
-        signOut.setOnAction(e -> app.signOut());
+        signOut.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                app.signOut();
+            }
+        });
         nav.getChildren().add(signOut);
 
         root.setLeft(nav);
@@ -92,19 +118,22 @@ public class StudentView {
     private Button navItem(String id, String text, Runnable action) {
         Button button = UiKit.navButton(text);
         button.setId(id);
-        button.setOnAction(e -> action.run());
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                action.run();
+            }
+        });
         navButtons.put(text, button);
         return button;
     }
 
-    /** Highlight the open screen in the side navigation. */
     private void updateNavSelection() {
         for (java.util.Map.Entry<String, Button> entry : navButtons.entrySet()) {
             UiKit.setNavSelected(entry.getValue(), entry.getKey().equals(current));
         }
     }
 
-    /** Rebuild the screen that is open now, from fresh backend state. */
     private void refreshCurrent() {
         switch (current) {
             case "My Courses":
@@ -135,13 +164,10 @@ public class StudentView {
         VBox box = new VBox(12, UiKit.title(title));
         box.getChildren().addAll(children);
         box.setPadding(new Insets(20));
+        UiKit.applyGroupedBackground(box);
         return box;
     }
 
-    // ---------------------------------------------------------------- Home
-
-    /** Only the essentials: identity, one line of progress, courses now,
-     *  and the single next action. Everything else waits in the nav. */
     private void showHome() {
         current = "Home";
         updateNavSelection();
@@ -153,8 +179,7 @@ public class StudentView {
 
         Label identity = new Label(student.getName() + "  •  " + student.getUserId()
                 + "  •  " + student.getProgram().getName());
-        identity.setFont(javafx.scene.text.Font.font("System",
-                javafx.scene.text.FontWeight.BOLD, 14));
+        identity.setFont(UiKit.textFont(javafx.scene.text.FontWeight.BOLD, 14));
         Label standing = UiKit.caption("Academic status: "
                 + student.getAcademicStatus());
         VBox who = UiKit.card(identity, standing);
@@ -170,7 +195,7 @@ public class StudentView {
         ArrayList<String> active = activeEnrollmentLines();
         ListView<String> coursesList = new ListView<>(
                 FXCollections.observableArrayList(active));
-        coursesList.setPrefHeight(220);
+        UiKit.styleInsetList(coursesList);
         if (active.isEmpty()) {
             coursesList.setItems(FXCollections.observableArrayList(
                     "You are not registered in any course yet."));
@@ -178,7 +203,12 @@ public class StudentView {
 
         Button registerButton = UiKit.primaryButton("Register for courses");
         registerButton.setId("home-register-button");
-        registerButton.setOnAction(e -> showRegister());
+        registerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                showRegister();
+            }
+        });
 
         javafx.scene.layout.HBox statsRow =
                 UiKit.statRow(cgpaCard, creditsCard, unreadCard);
@@ -204,11 +234,6 @@ public class StudentView {
         return lines;
     }
 
-    // ------------------------------------------------------------ My Courses
-
-    /** Every enrollment, newest state, with withdraw for the active one.
-     *  The list holds plain text lines (Lecture 7: ListView of strings);
-     *  the matching Enrollment objects are kept alongside for the action. */
     private void showCourses() {
         current = "My Courses";
         updateNavSelection();
@@ -217,9 +242,6 @@ public class StudentView {
         showCoursesWithMessage(null, false);
     }
 
-    /** My Courses, optionally showing the result of the action that
-     *  just happened — the banner is added after the rebuild so a
-     *  success message is never wiped by it. */
     private void showCoursesWithMessage(String message, boolean ok) {
         ArrayList<Enrollment> enrollments = student.getAcademicRecord().getEnrollments();
         ArrayList<String> lines = new ArrayList<>();
@@ -234,7 +256,7 @@ public class StudentView {
         }
         ListView<String> enrollmentsList = new ListView<>(
                 FXCollections.observableArrayList(lines));
-        enrollmentsList.setPrefHeight(300);
+        UiKit.styleInsetList(enrollmentsList);
         enrollmentsList.setId("courses-list");
         Label status = UiKit.statusLabel();
         if (message != null) {
@@ -243,7 +265,9 @@ public class StudentView {
 
         Button withdrawButton = UiKit.primaryButton("Withdraw Selected Course");
         withdrawButton.setId("courses-withdraw-button");
-        withdrawButton.setOnAction(e -> {
+        withdrawButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             int index = enrollmentsList.getSelectionModel().getSelectedIndex();
             if (index < 0 || index >= enrollments.size()) {
                 UiKit.showStatus(status, false, "Select a course first.");
@@ -267,7 +291,7 @@ public class StudentView {
                 context.getRegistration().withdraw(student, enrollment, LocalDate.now());
                 if (SaveCheck.enrollmentSaved(student.getUserId(),
                         enrollment.getCourseSection().getSectionId(), "WITHDRAWN")) {
-                    // Rebuild first, then show the banner on the new screen.
+
                     showCoursesWithMessage(
                             "Withdrawn from " + code + ". Your seat has been released.",
                             true);
@@ -279,6 +303,7 @@ public class StudentView {
                 }
             } catch (RegistrationException ex) {
                 UiKit.showStatus(status, false, ruleText("Withdrawal failed", ex));
+            }
             }
         });
 
@@ -292,18 +317,10 @@ public class StudentView {
         root.setCenter(content);
     }
 
-    // -------------------------------------------------------------- Register
-    //
-    // Step by step, one choice at a time:
-    //   1. choose a semester -> 2. choose a section -> 3. confirm.
-    // Rule feedback appears only at step 3, and only the rules the
-    // chosen section actually failed — never a list of all 7 rules.
-
     private int regStep = 1;
     private Semester regSemester;
     private CourseSection regSection;
 
-    /** Open the register flow from the start. */
     private void showRegister() {
         current = "Register";
         updateNavSelection();
@@ -327,7 +344,6 @@ public class StudentView {
         }
     }
 
-    /** Three pills showing which registration step we are on. */
     private javafx.scene.layout.HBox stepIndicator(int step) {
         javafx.scene.layout.HBox box = new javafx.scene.layout.HBox(8);
         String[] labels = {"1. Semester", "2. Section", "3. Confirm"};
@@ -342,11 +358,15 @@ public class StudentView {
     private Button backHomeButton() {
         Button back = UiKit.plainButton("Back to Home");
         back.setId("register-home-button");
-        back.setOnAction(e -> showHome());
+        back.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                showHome();
+            }
+        });
         return back;
     }
 
-    /** Step 1 of 3: choose a semester. */
     private void renderRegisterStep1() {
         ArrayList<Semester> semesters = context.getStore().getSemesters();
         ComboBox<Semester> semesterBox = new ComboBox<>(
@@ -362,7 +382,9 @@ public class StudentView {
 
         Button continueButton = UiKit.primaryButton("Continue");
         continueButton.setId("register-continue-button");
-        continueButton.setOnAction(e -> {
+        continueButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             regSemester = semesterBox.getValue();
             if (regSemester == null) {
                 UiKit.showStatus(status, false, "Choose a semester first.");
@@ -370,6 +392,7 @@ public class StudentView {
             }
             regStep = 2;
             renderRegisterStep();
+            }
         });
 
         root.setCenter(screen("Register — Step 1 of 3",
@@ -378,7 +401,6 @@ public class StudentView {
                 continueButton, status, backHomeButton()));
     }
 
-    /** Step 2 of 3: choose a section in that semester. */
     private void renderRegisterStep2() {
         ArrayList<CourseSection> sections =
                 context.getStore().getSectionsInSemester(regSemester);
@@ -391,19 +413,24 @@ public class StudentView {
         }
         ListView<String> sectionsList = new ListView<>(
                 FXCollections.observableArrayList(lines));
-        sectionsList.setPrefHeight(300);
+        UiKit.styleInsetList(sectionsList);
         sectionsList.setId("register-sections-list");
         Label status = UiKit.statusLabel();
 
         Button backButton = UiKit.plainButton("Back");
         backButton.setId("register-back-button");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             regStep = 1;
             renderRegisterStep();
+            }
         });
         Button continueButton = UiKit.primaryButton("Continue");
         continueButton.setId("register-continue-button");
-        continueButton.setOnAction(e -> {
+        continueButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             int index = sectionsList.getSelectionModel().getSelectedIndex();
             if (index < 0 || index >= sections.size()) {
                 UiKit.showStatus(status, false, "Select a section first.");
@@ -412,6 +439,7 @@ public class StudentView {
             regSection = sections.get(index);
             regStep = 3;
             renderRegisterStep();
+            }
         });
 
         root.setCenter(screen("Register — Step 2 of 3",
@@ -420,7 +448,6 @@ public class StudentView {
                 continueButton, backButton, status, backHomeButton()));
     }
 
-    /** Step 3 of 3: confirm the one chosen section. */
     private void renderRegisterStep3() {
         Label status = UiKit.statusLabel();
         StringBuilder meetings = new StringBuilder();
@@ -445,13 +472,18 @@ public class StudentView {
 
         Button backButton = UiKit.plainButton("Choose another section");
         backButton.setId("register-back-button");
-        backButton.setOnAction(e -> {
+        backButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             regStep = 2;
             renderRegisterStep();
+            }
         });
         Button confirmButton = UiKit.primaryButton("Confirm registration");
         confirmButton.setId("register-confirm-button");
-        confirmButton.setOnAction(e -> {
+        confirmButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             try {
                 context.getRegistration().register(
                         student, regSection, LocalDate.now());
@@ -466,16 +498,21 @@ public class StudentView {
                             "The change was not saved. Try again — if it keeps "
                                     + "failing, restart the app or contact the registrar.");
                 }
-                // The choice is done: offer home (fresh, shows the new
-                // course) or another registration.
+
                 Button againButton = UiKit.primaryButton("Register another course");
                 againButton.setId("register-again-button");
-                againButton.setOnAction(ev -> showRegister());
+                againButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent ev) {
+                        showRegister();
+                    }
+                });
                 root.setCenter(screen("Register — Done",
                         detail, status, againButton, backHomeButton()));
             } catch (RegistrationException ex) {
-                // Only the rules this section failed, at the moment they fail.
+
                 UiKit.showStatus(status, false, ruleText("Registration failed", ex));
+            }
             }
         });
 
@@ -485,9 +522,6 @@ public class StudentView {
                 detail, confirmButton, backButton, status, backHomeButton()));
     }
 
-    // ------------------------------------------------------------- Transcript
-
-    /** Built fresh from ReportService every time it is opened. */
     private void showTranscript() {
         current = "Transcript";
         updateNavSelection();
@@ -513,7 +547,7 @@ public class StudentView {
             lines.add("No enrollments yet.");
         }
         ListView<String> list = new ListView<>(FXCollections.observableArrayList(lines));
-        list.setPrefHeight(420);
+        UiKit.styleInsetList(list);
         VBox cgpaCard = UiKit.statCard(UiKit.formatGpa(transcript.getCgpa()),
                 "CGPA", UiKit.ACCENT);
         VBox earnedCard = UiKit.statCard(String.valueOf(transcript.getEarnedCredits()),
@@ -522,9 +556,6 @@ public class StudentView {
                 UiKit.statRow(cgpaCard, earnedCard), list));
     }
 
-    // ------------------------------------------------------------- Graduation
-
-    /** Built fresh from GraduationService every time it is opened. */
     private void showGraduation() {
         current = "Graduation";
         updateNavSelection();
@@ -556,9 +587,6 @@ public class StudentView {
         root.setCenter(screen("Graduation eligibility", card, progressCard));
     }
 
-    // ----------------------------------------------------------- Notifications
-
-    /** Built fresh from the notification service every time it is opened. */
     private void showNotifications() {
         current = "Notifications";
         updateNavSelection();
@@ -571,11 +599,9 @@ public class StudentView {
             lines.add("No notifications.");
         }
         ListView<String> list = new ListView<>(FXCollections.observableArrayList(lines));
-        list.setPrefHeight(420);
+        UiKit.styleInsetList(list);
         root.setCenter(screen("Notifications", list));
     }
-
-    // --------------------------------------------------------------- Settings
 
     private void showSettings() {
         current = "Settings";
@@ -591,7 +617,9 @@ public class StudentView {
 
         Button changeButton = UiKit.primaryButton("Change Password");
         changeButton.setId("settings-change-button");
-        changeButton.setOnAction(e -> {
+        changeButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             try {
                 student.changePassword(oldField.getText(), newField.getText());
                 context.getStore().save();
@@ -606,16 +634,21 @@ public class StudentView {
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
             }
+            }
         });
 
         Button signOut = UiKit.plainButton("Sign Out");
-        signOut.setOnAction(ev -> app.signOut());
+        signOut.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent ev) {
+                app.signOut();
+            }
+        });
 
         VBox card = UiKit.card(oldField, newField, changeButton, status);
         root.setCenter(screen("Change password", card, signOut));
     }
 
-    /** The failed rules from a RegistrationException, one per line. */
     private static String ruleText(String heading, RegistrationException ex) {
         StringBuilder text = new StringBuilder(heading + ":\n");
         for (String error : ex.getErrors()) {
@@ -624,3 +657,4 @@ public class StudentView {
         return text.toString();
     }
 }
+
