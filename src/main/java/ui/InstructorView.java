@@ -40,6 +40,7 @@ public class InstructorView {
     private CourseSection section;
     private ArrayList<RosterEntry> roster = new ArrayList<>();
     private RosterEntry selectedEntry;
+    private int selectedIndex = -1;
     private VBox root;
     private Label status;
 
@@ -92,6 +93,7 @@ public class InstructorView {
             section = sectionBox.getValue();
             selectedEntry = null;
             loadRoster();
+            selectedIndex = -1;
             render();
         });
         root.getChildren().addAll(UiKit.sectionLabel("Section"), sectionBox);
@@ -115,9 +117,14 @@ public class InstructorView {
                     FXCollections.observableArrayList(lines));
             rosterList.setId("instructor-roster-list");
             rosterList.setPrefHeight(260);
+            // Keep the clicked row highlighted after the rebuild (A2).
+            if (selectedIndex >= 0 && selectedIndex < roster.size()) {
+                rosterList.getSelectionModel().select(selectedIndex);
+            }
             rosterList.getSelectionModel().selectedIndexProperty().addListener(
                     (obs, oldIndex, newIndex) -> {
                         int index = newIndex.intValue();
+                        selectedIndex = index;
                         selectedEntry = (index >= 0 && index < roster.size())
                                 ? roster.get(index) : null;
                         render();
@@ -178,6 +185,17 @@ public class InstructorView {
             UiKit.showStatus(status, false, "Score must be a number from 0 to 100.");
             return;
         }
+        if (score < 0 || score > 100) {
+            UiKit.showStatus(status, false, "Score must be between 0 and 100.");
+            return;
+        }
+        Student gradedStudent = selectedEntry.getStudent();
+        if (!UiKit.confirm("Confirm grade",
+                "Record " + score + " for " + gradedStudent.getName() + " in "
+                        + section.getCourse().getCourseCode()
+                        + "?\nGrades cannot be edited in the app once recorded.")) {
+            return;
+        }
         if (selectedEntry.getEnrollment().getStatus()
                 != EnrollmentStatus.ENROLLED) {
             UiKit.showStatus(status, false,
@@ -194,10 +212,11 @@ public class InstructorView {
                         "Grade recorded for " + student.getName() + ": " + score + ".");
             } else {
                 UiKit.showStatus(status, false,
-                        "Grade recorded in the app, but the database did not confirm "
-                                + "the save — it may be lost when you sign out.");
+                        "The change was not saved. Try again — if it keeps "
+                                + "failing, restart the app or contact the registrar.");
             }
             selectedEntry = null;
+            selectedIndex = -1;
             loadRoster(); // fresh roster: the graded student now shows the grade
             render();
         } catch (IllegalArgumentException | IllegalStateException ex) {
