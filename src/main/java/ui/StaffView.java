@@ -1,6 +1,10 @@
 package ui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -19,20 +23,6 @@ import service.GradingService.RosterEntry;
 
 import java.util.ArrayList;
 
-/**
- * Academic staff portal, one panel at a time: pick a task in the side
- * navigation, then pick a student, then the action for that student
- * appears. Nothing else is on screen. Every panel is built fresh
- * from the store and services when it is opened, and every update
- * is confirmed against the database (see SaveCheck).
- *
- * The role checks live in the model and services (only a REGISTRAR
- * changes status or views a roster, only an ADVISOR can be assigned).
- *
- * Controls, layouts and styling are the ones from Lecture 7/8:
- * BorderPane/VBox, Label/Button/ComboBox/ListView of plain strings,
- * setOnAction handlers and inline CSS.
- */
 public class StaffView {
 
     private final AppContext context;
@@ -51,24 +41,52 @@ public class StaffView {
         this.staff = staff;
     }
 
-    /** Side navigation on the left, the open panel in the centre. */
     public BorderPane build() {
         root = new BorderPane();
 
         VBox nav = new VBox(6);
         nav.setPadding(new Insets(16, 10, 16, 16));
         nav.setPrefWidth(180);
+        nav.setStyle("-fx-background-color: white;"
+                + "-fx-border-color: transparent " + UiKit.SEPARATOR
+                + " transparent transparent;"
+                + "-fx-border-width: 0 1 0 0;");
         nav.getChildren().addAll(
-                navItem("staff-nav-students", "Students", this::showStudents),
-                navItem("staff-nav-status", "Update Status", this::showStatusPane),
-                navItem("staff-nav-advisor", "Assign Advisor", this::showAdvisorPane),
-                navItem("staff-nav-roster", "Section Roster", this::showRosterPane));
+                navItem("staff-nav-students", "Students", new Runnable() {
+                    @Override
+                    public void run() {
+                        showStudents();
+                    }
+                }),
+                navItem("staff-nav-status", "Update Status", new Runnable() {
+                    @Override
+                    public void run() {
+                        showStatusPane();
+                    }
+                }),
+                navItem("staff-nav-advisor", "Assign Advisor", new Runnable() {
+                    @Override
+                    public void run() {
+                        showAdvisorPane();
+                    }
+                }),
+                navItem("staff-nav-roster", "Section Roster", new Runnable() {
+                    @Override
+                    public void run() {
+                        showRosterPane();
+                    }
+                }));
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
         nav.getChildren().add(spacer);
         Button signOut = UiKit.plainButton("Sign Out");
         signOut.setId("staff-signout");
-        signOut.setOnAction(e -> app.signOut());
+        signOut.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                app.signOut();
+            }
+        });
         nav.getChildren().add(signOut);
 
         root.setLeft(nav);
@@ -79,12 +97,16 @@ public class StaffView {
     private Button navItem(String id, String text, Runnable action) {
         Button button = UiKit.navButton(text);
         button.setId(id);
-        button.setOnAction(e -> action.run());
+        button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                action.run();
+            }
+        });
         navButtons.put(text, button);
         return button;
     }
 
-    /** Highlight the open panel in the side navigation. */
     private void updateNavSelection() {
         for (java.util.Map.Entry<String, Button> entry : navButtons.entrySet()) {
             UiKit.setNavSelected(entry.getValue(), entry.getKey().equals(current));
@@ -95,12 +117,10 @@ public class StaffView {
         VBox box = new VBox(12, UiKit.title(title));
         box.getChildren().addAll(children);
         box.setPadding(new Insets(20));
+        UiKit.applyGroupedBackground(box);
         return box;
     }
 
-    // --------------------------------------------------------------- Students
-
-    /** All students, fresh. Pick one to see what can be done for them. */
     private void showStudents() {
         current = "Students";
         updateNavSelection();
@@ -114,34 +134,48 @@ public class StaffView {
             lines.add("No students.");
         }
         ListView<String> list = new ListView<>(FXCollections.observableArrayList(lines));
+        UiKit.styleInsetList(list);
         list.setId("staff-students-list");
-        list.setPrefHeight(300);
         Label detail = new Label();
         detail.setWrapText(true);
         VBox actions = new VBox(12);
 
         list.getSelectionModel().selectedIndexProperty().addListener(
-                (obs, oldIndex, newIndex) -> {
-                    int index = newIndex.intValue();
-                    ArrayList<Student> students = context.getStore().getStudents();
-                    if (index < 0 || index >= students.size()) {
-                        return;
+                new ChangeListener<Number>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Number> obs,
+                            Number oldIndex, Number newIndex) {
+                        int index = newIndex.intValue();
+                        ArrayList<Student> students = context.getStore().getStudents();
+                        if (index < 0 || index >= students.size()) {
+                            return;
+                        }
+                        selectedStudent = students.get(index);
+                        detail.setText(describe(selectedStudent)
+                                + "\n\nAdvisor: "
+                                + (selectedStudent.getAdvisor() == null
+                                        ? "None" : selectedStudent.getAdvisor().getName()));
+                        actions.getChildren().clear();
+                        Button statusButton = UiKit.plainButton("Update Status");
+                        statusButton.setId("staff-student-status-button");
+                        statusButton.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                                showStatusPane();
+                            }
+                        });
+                        Button advisorButton = UiKit.plainButton("Assign Advisor");
+                        advisorButton.setId("staff-student-advisor-button");
+                        advisorButton.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent e) {
+                                showAdvisorPane();
+                            }
+                        });
+                        actions.getChildren().addAll(
+                                UiKit.sectionLabel("Actions for " + selectedStudent.getName()),
+                                statusButton, advisorButton);
                     }
-                    selectedStudent = students.get(index);
-                    detail.setText(describe(selectedStudent)
-                            + "\n\nAdvisor: "
-                            + (selectedStudent.getAdvisor() == null
-                                    ? "None" : selectedStudent.getAdvisor().getName()));
-                    actions.getChildren().clear();
-                    Button statusButton = UiKit.plainButton("Update Status");
-                    statusButton.setId("staff-student-status-button");
-                    statusButton.setOnAction(e -> showStatusPane());
-                    Button advisorButton = UiKit.plainButton("Assign Advisor");
-                    advisorButton.setId("staff-student-advisor-button");
-                    advisorButton.setOnAction(e -> showAdvisorPane());
-                    actions.getChildren().addAll(
-                            UiKit.sectionLabel("Actions for " + selectedStudent.getName()),
-                            statusButton, advisorButton);
                 });
 
         VBox center = screen("All students", list, detail, actions);
@@ -159,9 +193,6 @@ public class StaffView {
                 + "  •  Advisor: " + advisor;
     }
 
-    // ------------------------------------------------------------ Update status
-
-    /** Pick a student first; the status choice appears only then. */
     private void showStatusPane() {
         current = "Update Status";
         updateNavSelection();
@@ -182,7 +213,9 @@ public class StaffView {
                 UiKit.sectionLabel("New status (registrar only)"), statusBox);
         Button updateButton = UiKit.primaryButton("Update Status");
         updateButton.setId("staff-update-button");
-        updateButton.setOnAction(e -> {
+        updateButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             Student student = studentBox.getValue();
             AcademicStatus newStatus = statusBox.getValue();
             if (student == null || newStatus == null) {
@@ -206,14 +239,12 @@ public class StaffView {
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
             }
+            }
         });
         center.getChildren().addAll(updateButton, status);
         root.setCenter(center);
     }
 
-    // ------------------------------------------------------------ Assign advisor
-
-    /** Pick a student first; the advisor choice appears only then. */
     private void showAdvisorPane() {
         current = "Assign Advisor";
         updateNavSelection();
@@ -240,7 +271,9 @@ public class StaffView {
                 UiKit.sectionLabel("Advisor"), advisorBox);
         Button assignButton = UiKit.primaryButton("Assign Advisor");
         assignButton.setId("staff-assign-button");
-        assignButton.setOnAction(e -> {
+        assignButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             Student student = studentBox.getValue();
             AcademicStaff advisor = advisorBox.getValue();
             if (student == null || advisor == null) {
@@ -262,14 +295,12 @@ public class StaffView {
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
             }
+            }
         });
         center.getChildren().addAll(assignButton, status);
         root.setCenter(center);
     }
 
-    // ------------------------------------------------------------ Section roster
-
-    /** Pick a section first; its roster appears only then. */
     private void showRosterPane() {
         current = "Section Roster";
         updateNavSelection();
@@ -279,11 +310,13 @@ public class StaffView {
         sectionBox.setId("staff-section-box");
         sectionBox.setMaxWidth(Double.MAX_VALUE);
         ListView<String> rosterList = new ListView<>();
+        UiKit.styleInsetList(rosterList);
         rosterList.setId("staff-roster-list");
-        rosterList.setPrefHeight(380);
         Label status = UiKit.statusLabel();
 
-        sectionBox.setOnAction(e -> {
+        sectionBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
             CourseSection section = sectionBox.getValue();
             ArrayList<String> lines = new ArrayList<>();
             if (section != null) {
@@ -304,6 +337,7 @@ public class StaffView {
                 lines.add("No students in this section yet.");
             }
             rosterList.setItems(FXCollections.observableArrayList(lines));
+            }
         });
 
         root.setCenter(screen("Section roster",
@@ -318,3 +352,4 @@ public class StaffView {
         return box;
     }
 }
+
