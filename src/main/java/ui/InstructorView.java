@@ -1,6 +1,10 @@
 package ui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -17,20 +21,6 @@ import service.GradingService.RosterEntry;
 
 import java.util.ArrayList;
 
-/**
- * Instructor portal, one task at a time: pick a section, see its
- * roster, pick a student, then record the grade. Each step appears
- * only when the previous one is done, and the roster is rebuilt fresh
- * from GradingService after every grade is recorded.
- *
- * Grading goes through GradingService — it completes the enrollment,
- * notifies the student and updates the academic standing — and the
- * result is confirmed against the database (see SaveCheck).
- *
- * Controls, layouts and styling are the ones from Lecture 7/8:
- * VBox, Label, Button, ComboBox, ListView of plain strings,
- * TextField, setOnAction handlers and inline CSS.
- */
 public class InstructorView {
 
     private final AppContext context;
@@ -53,6 +43,7 @@ public class InstructorView {
     public VBox build() {
         root = new VBox(12);
         root.setPadding(new Insets(20));
+        UiKit.applyGroupedBackground(root);
         status = UiKit.statusLabel();
         render();
         return root;
@@ -68,18 +59,15 @@ public class InstructorView {
         return mine;
     }
 
-    /** Rebuild the whole screen from current state (fresh from backend). */
     private void render() {
         root.getChildren().clear();
         root.getChildren().add(UiKit.sectionLabel("Record a grade"));
 
-        // First section is the default, so its roster shows right away.
         if (section == null && !mySections().isEmpty()) {
             section = mySections().get(0);
             loadRoster();
         }
 
-        // Step 1: pick one of my sections.
         ComboBox<CourseSection> sectionBox = new ComboBox<>(
                 FXCollections.observableArrayList(mySections()));
         sectionBox.setId("instructor-section-box");
@@ -89,16 +77,18 @@ public class InstructorView {
         } else if (!mySections().isEmpty()) {
             sectionBox.setValue(mySections().get(0));
         }
-        sectionBox.setOnAction(e -> {
-            section = sectionBox.getValue();
-            selectedEntry = null;
-            loadRoster();
-            selectedIndex = -1;
-            render();
+        sectionBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                section = sectionBox.getValue();
+                selectedEntry = null;
+                loadRoster();
+                selectedIndex = -1;
+                render();
+            }
         });
         root.getChildren().addAll(UiKit.sectionLabel("Section"), sectionBox);
 
-        // Step 2: the roster of the chosen section (fresh from the service).
         if (section != null) {
             ArrayList<String> lines = new ArrayList<>();
             for (RosterEntry entry : roster) {
@@ -115,26 +105,27 @@ public class InstructorView {
             }
             ListView<String> rosterList = new ListView<>(
                     FXCollections.observableArrayList(lines));
+            UiKit.styleInsetList(rosterList);
             rosterList.setId("instructor-roster-list");
-            rosterList.setPrefHeight(260);
-            // Keep the clicked row highlighted after the rebuild (A2).
+
             if (selectedIndex >= 0 && selectedIndex < roster.size()) {
                 rosterList.getSelectionModel().select(selectedIndex);
             }
             rosterList.getSelectionModel().selectedIndexProperty().addListener(
-                    (obs, oldIndex, newIndex) -> {
-                        int index = newIndex.intValue();
-                        selectedIndex = index;
-                        selectedEntry = (index >= 0 && index < roster.size())
-                                ? roster.get(index) : null;
-                        render();
+                    new ChangeListener<Number>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Number> obs,
+                                Number oldIndex, Number newIndex) {
+                            int index = newIndex.intValue();
+                            selectedIndex = index;
+                            selectedEntry = (index >= 0 && index < roster.size())
+                                    ? roster.get(index) : null;
+                            render();
+                        }
                     });
             root.getChildren().addAll(UiKit.sectionLabel("Roster"), rosterList);
         }
 
-        // Step 3: record a grade for the chosen student — nothing else.
-        // Only an active enrollment can be graded; a completed one
-        // just shows its grade, there is nothing to record.
         if (selectedEntry != null) {
             Student student = selectedEntry.getStudent();
             Enrollment enrollment = selectedEntry.getEnrollment();
@@ -151,7 +142,12 @@ public class InstructorView {
                 scoreField.setPromptText("Score (0–100)");
                 Button recordButton = UiKit.primaryButton("Record Grade");
                 recordButton.setId("instructor-record-button");
-                recordButton.setOnAction(e -> recordGrade(scoreField.getText()));
+                recordButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        recordGrade(scoreField.getText());
+                    }
+                });
                 VBox form = UiKit.card(who, scoreField, recordButton);
                 root.getChildren().addAll(UiKit.sectionLabel("Record grade"), form);
             }
@@ -161,7 +157,12 @@ public class InstructorView {
 
         Button signOut = UiKit.plainButton("Sign Out");
         signOut.setId("instructor-signout");
-        signOut.setOnAction(e -> app.signOut());
+        signOut.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                app.signOut();
+            }
+        });
         root.getChildren().add(signOut);
     }
 
@@ -217,10 +218,11 @@ public class InstructorView {
             }
             selectedEntry = null;
             selectedIndex = -1;
-            loadRoster(); // fresh roster: the graded student now shows the grade
+            loadRoster();
             render();
         } catch (IllegalArgumentException | IllegalStateException ex) {
             UiKit.showStatus(status, false, ex.getMessage());
         }
     }
 }
+
