@@ -52,6 +52,8 @@ public class StudentView {
 
     private BorderPane root;
     private String current = "Home";
+    private final java.util.Map<String, Button> navButtons =
+            new java.util.LinkedHashMap<>();
 
     public StudentView(AppContext context, JavaFxApp app, Student student) {
         this.context = context;
@@ -91,7 +93,15 @@ public class StudentView {
         Button button = UiKit.navButton(text);
         button.setId(id);
         button.setOnAction(e -> action.run());
+        navButtons.put(text, button);
         return button;
+    }
+
+    /** Highlight the open screen in the side navigation. */
+    private void updateNavSelection() {
+        for (java.util.Map.Entry<String, Button> entry : navButtons.entrySet()) {
+            UiKit.setNavSelected(entry.getValue(), entry.getKey().equals(current));
+        }
     }
 
     /** Rebuild the screen that is open now, from fresh backend state. */
@@ -122,7 +132,7 @@ public class StudentView {
     }
 
     private VBox screen(String title, javafx.scene.Node... children) {
-        VBox box = new VBox(12, UiKit.sectionLabel(title));
+        VBox box = new VBox(12, UiKit.title(title));
         box.getChildren().addAll(children);
         box.setPadding(new Insets(20));
         return box;
@@ -134,18 +144,28 @@ public class StudentView {
      *  and the single next action. Everything else waits in the nav. */
     private void showHome() {
         current = "Home";
+        updateNavSelection();
 
         int unread = context.getNotifications().getInbox(student).size();
+        double cgpa = student.getAcademicRecord().calculateCGPA();
+        int earned = student.getAcademicRecord().getEarnedCredits();
+        int required = student.getProgram().getTotalCreditsRequired();
+
         Label identity = new Label(student.getName() + "  •  " + student.getUserId()
                 + "  •  " + student.getProgram().getName());
-        Label progress = new Label("CGPA " + UiKit.formatGpa(
-                student.getAcademicRecord().calculateCGPA())
-                + "  •  Earned credits: "
-                + student.getAcademicRecord().getEarnedCredits()
-                + " / " + student.getProgram().getTotalCreditsRequired()
-                + (unread > 0 ? "  •  " + unread + " unread message(s)" : ""));
-        progress.setStyle("-fx-text-fill: #8E8E93;");
-        VBox who = UiKit.card(identity, progress);
+        identity.setFont(javafx.scene.text.Font.font("System",
+                javafx.scene.text.FontWeight.BOLD, 14));
+        Label standing = UiKit.caption("Academic status: "
+                + student.getAcademicStatus());
+        VBox who = UiKit.card(identity, standing);
+
+        VBox cgpaCard = UiKit.statCard(UiKit.formatGpa(cgpa), "CGPA", UiKit.ACCENT);
+        VBox creditsCard = UiKit.statCard(earned + " / " + required,
+                "Credits earned", UiKit.GREEN);
+        creditsCard.getChildren().add(UiKit.progressBar(
+                required == 0 ? 0 : (double) earned / required, UiKit.GREEN));
+        VBox unreadCard = UiKit.statCard(String.valueOf(unread),
+                "Notifications", unread > 0 ? UiKit.ORANGE : UiKit.GRAY);
 
         ArrayList<String> active = activeEnrollmentLines();
         ListView<String> coursesList = new ListView<>(
@@ -160,8 +180,11 @@ public class StudentView {
         registerButton.setId("home-register-button");
         registerButton.setOnAction(e -> showRegister());
 
+        javafx.scene.layout.HBox statsRow =
+                UiKit.statRow(cgpaCard, creditsCard, unreadCard);
         root.setCenter(screen("Welcome, " + student.getName(),
                 who,
+                statsRow,
                 UiKit.sectionLabel("My courses now"),
                 coursesList,
                 registerButton));
@@ -188,7 +211,16 @@ public class StudentView {
      *  the matching Enrollment objects are kept alongside for the action. */
     private void showCourses() {
         current = "My Courses";
+        updateNavSelection();
 
+        ArrayList<Enrollment> enrollments = student.getAcademicRecord().getEnrollments();
+        showCoursesWithMessage(null, false);
+    }
+
+    /** My Courses, optionally showing the result of the action that
+     *  just happened — the banner is added after the rebuild so a
+     *  success message is never wiped by it. */
+    private void showCoursesWithMessage(String message, boolean ok) {
         ArrayList<Enrollment> enrollments = student.getAcademicRecord().getEnrollments();
         ArrayList<String> lines = new ArrayList<>();
         for (Enrollment enrollment : enrollments) {
@@ -200,21 +232,21 @@ public class StudentView {
                     + " (Section " + section.getSectionNo() + ")"
                     + "  •  " + enrollment.getStatus() + grade);
         }
-        if (lines.isEmpty()) {
-            lines.add("No enrollments yet.");
-        }
         ListView<String> enrollmentsList = new ListView<>(
                 FXCollections.observableArrayList(lines));
         enrollmentsList.setPrefHeight(300);
         enrollmentsList.setId("courses-list");
         Label status = UiKit.statusLabel();
+        if (message != null) {
+            UiKit.showStatus(status, ok, message);
+        }
 
-        Button withdrawButton = UiKit.primaryButton("Withdraw from Selected Enrollment");
+        Button withdrawButton = UiKit.primaryButton("Withdraw Selected Course");
         withdrawButton.setId("courses-withdraw-button");
         withdrawButton.setOnAction(e -> {
             int index = enrollmentsList.getSelectionModel().getSelectedIndex();
             if (index < 0 || index >= enrollments.size()) {
-                UiKit.showStatus(status, false, "Select an enrollment first.");
+                UiKit.showStatus(status, false, "Select a course first.");
                 return;
             }
             Enrollment enrollment = enrollments.get(index);
@@ -223,25 +255,41 @@ public class StudentView {
                         "Only an active enrollment can be withdrawn.");
                 return;
             }
+            String code = enrollment.getCourseSection().getCourse().getCourseCode();
+            String name = enrollment.getCourseSection().getCourse().getCourseName();
+            if (!UiKit.confirm("Confirm withdrawal",
+                    "Withdraw from " + code + " — " + name + ", Section "
+                            + enrollment.getCourseSection().getSectionNo()
+                            + "?\nYour seat is released. This cannot be undone from the app.")) {
+                return;
+            }
             try {
                 context.getRegistration().withdraw(student, enrollment, LocalDate.now());
-                String code = enrollment.getCourseSection().getCourse().getCourseCode();
                 if (SaveCheck.enrollmentSaved(student.getUserId(),
                         enrollment.getCourseSection().getSectionId(), "WITHDRAWN")) {
-                    UiKit.showStatus(status, true, "Withdrawn from " + code + ".");
+                    // Rebuild first, then show the banner on the new screen.
+                    showCoursesWithMessage(
+                            "Withdrawn from " + code + ". Your seat has been released.",
+                            true);
                 } else {
-                    UiKit.showStatus(status, false,
-                            "Withdrawn in the app, but the database did not confirm "
-                                    + "the save — it may be lost when you sign out.");
+                    showCoursesWithMessage(
+                            "The change was not saved. Try again — if it keeps "
+                                    + "failing, restart the app or contact the registrar.",
+                            false);
                 }
-                refreshCurrent();
             } catch (RegistrationException ex) {
                 UiKit.showStatus(status, false, ruleText("Withdrawal failed", ex));
             }
         });
 
-        root.setCenter(screen("My courses",
-                enrollmentsList, withdrawButton, status));
+        VBox content = screen("My courses",
+                enrollmentsList, withdrawButton, status);
+        if (enrollments.isEmpty()) {
+            content.getChildren().setAll(UiKit.title("My courses"),
+                    UiKit.emptyState("No enrollments yet. "
+                            + "Open Register to pick your first course."));
+        }
+        root.setCenter(content);
     }
 
     // -------------------------------------------------------------- Register
@@ -258,6 +306,7 @@ public class StudentView {
     /** Open the register flow from the start. */
     private void showRegister() {
         current = "Register";
+        updateNavSelection();
         regStep = 1;
         regSemester = null;
         regSection = null;
@@ -276,6 +325,18 @@ public class StudentView {
                 renderRegisterStep1();
                 break;
         }
+    }
+
+    /** Three pills showing which registration step we are on. */
+    private javafx.scene.layout.HBox stepIndicator(int step) {
+        javafx.scene.layout.HBox box = new javafx.scene.layout.HBox(8);
+        String[] labels = {"1. Semester", "2. Section", "3. Confirm"};
+        for (int i = 0; i < labels.length; i++) {
+            box.getChildren().add(i + 1 == step
+                    ? UiKit.pill(labels[i], UiKit.ACCENT)
+                    : UiKit.softPill(labels[i], UiKit.GRAY));
+        }
+        return box;
     }
 
     private Button backHomeButton() {
@@ -312,6 +373,7 @@ public class StudentView {
         });
 
         root.setCenter(screen("Register — Step 1 of 3",
+                stepIndicator(1),
                 UiKit.sectionLabel("Choose a semester"), semesterBox,
                 continueButton, status, backHomeButton()));
     }
@@ -322,7 +384,7 @@ public class StudentView {
                 context.getStore().getSectionsInSemester(regSemester);
         ArrayList<String> lines = new ArrayList<>();
         for (CourseSection section : sections) {
-            lines.add(BrowseView.describe(section));
+            lines.add(BrowseView.describeWithSeats(context, section));
         }
         if (lines.isEmpty()) {
             lines.add("No sections in this semester.");
@@ -353,6 +415,7 @@ public class StudentView {
         });
 
         root.setCenter(screen("Register — Step 2 of 3",
+                stepIndicator(2),
                 UiKit.sectionLabel("Sections in " + regSemester), sectionsList,
                 continueButton, backButton, status, backHomeButton()));
     }
@@ -360,13 +423,25 @@ public class StudentView {
     /** Step 3 of 3: confirm the one chosen section. */
     private void renderRegisterStep3() {
         Label status = UiKit.statusLabel();
+        StringBuilder meetings = new StringBuilder();
+        for (model.MeetingTime meeting : regSection.getMeetings()) {
+            if (meetings.length() > 0) {
+                meetings.append("  •  ");
+            }
+            meetings.append(meeting);
+        }
+        int seatsLeft = BrowseView.seatsLeft(context, regSection);
         VBox detail = UiKit.card(
                 new Label(regSection.getCourse().getCourseCode() + " — "
                         + regSection.getCourse().getCourseName()),
                 new Label("Section " + regSection.getSectionNo()
                         + "  •  " + regSection.getCourse().getCreditHours() + " credits"
                         + "  •  " + regSemester),
-                new Label("Instructor: " + regSection.getInstructor().getName()));
+                new Label("Instructor: " + regSection.getInstructor().getName()),
+                new Label("Schedule: " + (meetings.length() == 0
+                        ? "to be announced" : meetings.toString())),
+                new Label(seatsLeft <= 0 ? "This section is full."
+                        : seatsLeft + " seats left."));
 
         Button backButton = UiKit.plainButton("Choose another section");
         backButton.setId("register-back-button");
@@ -388,8 +463,8 @@ public class StudentView {
                                     + regSection.getSectionNo() + ".");
                 } else {
                     UiKit.showStatus(status, false,
-                            "Registered in the app, but the database did not confirm "
-                                    + "the save — it may be lost when you sign out.");
+                            "The change was not saved. Try again — if it keeps "
+                                    + "failing, restart the app or contact the registrar.");
                 }
                 // The choice is done: offer home (fresh, shows the new
                 // course) or another registration.
@@ -405,6 +480,7 @@ public class StudentView {
         });
 
         root.setCenter(screen("Register — Step 3 of 3",
+                stepIndicator(3),
                 UiKit.sectionLabel("Confirm registration"),
                 detail, confirmButton, backButton, status, backHomeButton()));
     }
@@ -414,6 +490,7 @@ public class StudentView {
     /** Built fresh from ReportService every time it is opened. */
     private void showTranscript() {
         current = "Transcript";
+        updateNavSelection();
 
         Transcript transcript = context.getReports().transcript(student);
         ArrayList<String> lines = new ArrayList<>();
@@ -437,7 +514,12 @@ public class StudentView {
         }
         ListView<String> list = new ListView<>(FXCollections.observableArrayList(lines));
         list.setPrefHeight(420);
-        root.setCenter(screen("Transcript", list));
+        VBox cgpaCard = UiKit.statCard(UiKit.formatGpa(transcript.getCgpa()),
+                "CGPA", UiKit.ACCENT);
+        VBox earnedCard = UiKit.statCard(String.valueOf(transcript.getEarnedCredits()),
+                "Earned credits", UiKit.GREEN);
+        root.setCenter(screen("Transcript",
+                UiKit.statRow(cgpaCard, earnedCard), list));
     }
 
     // ------------------------------------------------------------- Graduation
@@ -445,8 +527,11 @@ public class StudentView {
     /** Built fresh from GraduationService every time it is opened. */
     private void showGraduation() {
         current = "Graduation";
+        updateNavSelection();
 
         GraduationReport report = context.getGraduation().checkGraduationEligibility(student);
+        int earnedCredits = student.getAcademicRecord().getEarnedCredits();
+        int requiredCredits = student.getProgram().getTotalCreditsRequired();
         VBox card;
         if (report.isEligible()) {
             card = UiKit.card(new Label("You are eligible to graduate."),
@@ -462,7 +547,13 @@ public class StudentView {
             items.addAll(report.getUnmetReasons());
             card = UiKit.card(new Label(String.join("\n• ", items)));
         }
-        root.setCenter(screen("Graduation eligibility", card));
+        VBox progressCard = UiKit.card(
+                UiKit.sectionLabel("Credit progress"),
+                new Label(earnedCredits + " of " + requiredCredits + " credits"),
+                UiKit.progressBar(requiredCredits == 0 ? 0
+                        : (double) earnedCredits / requiredCredits,
+                        report.isEligible() ? UiKit.GREEN : UiKit.ORANGE));
+        root.setCenter(screen("Graduation eligibility", card, progressCard));
     }
 
     // ----------------------------------------------------------- Notifications
@@ -470,6 +561,7 @@ public class StudentView {
     /** Built fresh from the notification service every time it is opened. */
     private void showNotifications() {
         current = "Notifications";
+        updateNavSelection();
 
         ArrayList<String> lines = new ArrayList<>();
         for (Notification notification : context.getNotifications().getInbox(student)) {
@@ -487,6 +579,7 @@ public class StudentView {
 
     private void showSettings() {
         current = "Settings";
+        updateNavSelection();
 
         PasswordField oldField = new PasswordField();
         oldField.setPromptText("Current 4-digit password");
@@ -507,8 +600,8 @@ public class StudentView {
                     UiKit.showStatus(status, true, "Password updated.");
                 } else {
                     UiKit.showStatus(status, false,
-                            "Password changed in the app, but the database did not "
-                                    + "confirm the save — it may be lost when you sign out.");
+                            "The change was not saved. Try again — if it keeps "
+                                    + "failing, restart the app or contact the registrar.");
                 }
             } catch (IllegalArgumentException ex) {
                 UiKit.showStatus(status, false, ex.getMessage());
