@@ -6,6 +6,8 @@ import data.DataStore;
 import db.DatabaseConnection;
 import db.SchemaInitializer;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -13,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.AcademicStaff;
@@ -28,17 +31,6 @@ import service.ReportService;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/**
- * JavaFX entry point for the University Registration System.
- *
- * It wires exactly the same objects as Main (DatabaseConnection,
- * SchemaInitializer, DataStore and the services) and then shows the
- * graphical UI instead of the console. All rules live in the services;
- * this class and the views only display data and call the services.
- *
- * Look: Apple Human Interface Guidelines on AtlantaFX Cupertino
- * (light / dark appearance toggle in the top bar).
- */
 public class JavaFxApp extends Application {
 
     private AppContext context;
@@ -65,13 +57,13 @@ public class JavaFxApp extends Application {
         }
         stage.setTitle("University Registration System");
         root = new BorderPane();
+        UiKit.applyGroupedBackground(root);
         Scene scene = new Scene(root, 1000, 680);
         stage.setScene(scene);
         showLogin();
         stage.show();
     }
 
-    /** Same wiring as Main.main(). */
     private static AppContext buildContext() throws Exception {
         DatabaseConnection db = DatabaseConnection.fromProperties();
         Connection connection;
@@ -97,7 +89,6 @@ public class JavaFxApp extends Application {
         return new AppContext(store, notifications, registration, grading, graduation, reports);
     }
 
-    /** Switch between the light and dark Cupertino appearance. */
     private void toggleAppearance() {
         darkAppearance = !darkAppearance;
         if (darkAppearance) {
@@ -109,16 +100,24 @@ public class JavaFxApp extends Application {
 
     private HBox topBar(String title) {
         Label titleLabel = UiKit.largeTitle(title);
-        Button appearanceButton = new Button(darkAppearance ? "Light" : "Dark");
-        appearanceButton.setOnAction(e -> {
-            toggleAppearance();
-            appearanceButton.setText(darkAppearance ? "Light" : "Dark");
+        Button appearanceButton = UiKit.plainButton(darkAppearance ? "Light" : "Dark");
+        appearanceButton.setMaxWidth(Region.USE_PREF_SIZE);
+        appearanceButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                toggleAppearance();
+                appearanceButton.setText(darkAppearance ? "Light" : "Dark");
+            }
         });
         HBox bar = new HBox(12, titleLabel);
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
         bar.getChildren().add(appearanceButton);
-        bar.setPadding(new Insets(16, 20, 8, 20));
+        bar.setPadding(new Insets(16, 20, 12, 20));
         bar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        bar.setStyle("-fx-background-color: " + UiKit.GROUPED_BG + ";"
+                + "-fx-border-color: transparent transparent "
+                + UiKit.SEPARATOR + " transparent;"
+                + "-fx-border-width: 0 0 1 0;");
         return bar;
     }
 
@@ -128,20 +127,17 @@ public class JavaFxApp extends Application {
         root.setLeft(null);
     }
 
-    /** Login screen. */
     public void showLogin() {
         signedInUser = null;
         LoginView view = new LoginView(context, this);
         setScreen("University Registration", view.build());
     }
 
-    /** Visitor browse screen (no sign-in). */
     public void showBrowse() {
         BrowseView view = new BrowseView(context, this);
         setScreen("Browse Sections", view.build());
     }
 
-    /** Open the right portal for the signed-in user. */
     public void signedIn(User user) {
         signedInUser = user;
         if (user instanceof Student) {
@@ -164,3 +160,4 @@ public class JavaFxApp extends Application {
         return signedInUser;
     }
 }
+
