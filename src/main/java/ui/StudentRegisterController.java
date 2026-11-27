@@ -2,6 +2,7 @@ package ui;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -41,6 +42,8 @@ public class StudentRegisterController {
     private Label sectionsLabel;
 
     @FXML
+    private ScrollPane sectionsListScroll;
+
     private RowTable sectionsList;
 
     @FXML
@@ -83,6 +86,7 @@ public class StudentRegisterController {
     private ArrayList<CourseSection> sections = new ArrayList<>();
 
     public void init(AppContext context, Student student, StudentController parent) {
+        sectionsList = new RowTable(sectionsListScroll);
         this.context = context;
         this.student = student;
         this.parent = parent;

@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StaffStudentsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="All students" />
@@ -21,7 +20,7 @@
             <Label styleClass="stat-caption" text="ON PROBATION" />
         </VBox>
     </HBox>
-    <RowTable fx:id="studentsList" id="staff-students-list" VBox.vgrow="ALWAYS" />
+    <ScrollPane fx:id="studentsListScroll" id="staff-students-list" fitToWidth="true" hbarPolicy="NEVER" minHeight="120" prefHeight="220" styleClass="row-table" VBox.vgrow="ALWAYS" />
     <Label fx:id="detailLabel" minHeight="-Infinity" managed="false" maxWidth="Infinity" styleClass="card" visible="false" wrapText="true" />
     <VBox fx:id="actionsBox" managed="false" spacing="12" visible="false">
         <Label fx:id="actionsLabel" styleClass="section-label" />

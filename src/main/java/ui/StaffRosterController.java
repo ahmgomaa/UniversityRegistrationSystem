@@ -2,6 +2,7 @@ package ui;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import model.AcademicStaff;
@@ -16,6 +17,8 @@ public class StaffRosterController {
     private ComboBox<CourseSection> sectionBox;
 
     @FXML
+    private ScrollPane rosterListScroll;
+
     private RowTable rosterList;
 
     @FXML
@@ -25,6 +28,7 @@ public class StaffRosterController {
     private AcademicStaff staff;
 
     public void init(AppContext context, AcademicStaff staff) {
+        rosterList = new RowTable(rosterListScroll);
         this.context = context;
         this.staff = staff;
         sectionBox.setItems(FXCollections.observableArrayList(

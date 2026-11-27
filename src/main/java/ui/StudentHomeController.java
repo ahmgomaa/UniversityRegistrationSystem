@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import model.CourseSection;
@@ -33,11 +34,14 @@ public class StudentHomeController {
     private Label unreadValue;
 
     @FXML
+    private ScrollPane coursesListScroll;
+
     private RowTable coursesList;
 
     private StudentController parent;
 
     public void init(AppContext context, Student student, StudentController parent) {
+        coursesList = new RowTable(coursesListScroll);
         this.parent = parent;
 
         int unread = context.getNotifications().getInbox(student).size();

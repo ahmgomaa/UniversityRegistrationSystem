@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import model.CourseSection;
@@ -21,6 +22,8 @@ public class StudentCoursesController {
     private VBox content;
 
     @FXML
+    private ScrollPane coursesListScroll;
+
     private RowTable coursesList;
 
     @FXML
@@ -31,6 +34,7 @@ public class StudentCoursesController {
     private ArrayList<Enrollment> enrollments;
 
     public void init(AppContext context, Student student) {
+        coursesList = new RowTable(coursesListScroll);
         this.context = context;
         this.student = student;
         coursesList.setColumns(
