@@ -1,12 +1,9 @@
 package ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import model.CourseSection;
@@ -36,7 +33,7 @@ public class InstructorController {
     private VBox rosterPane;
 
     @FXML
-    private ListView<String> rosterList;
+    private RowTable rosterList;
 
     @FXML
     private VBox gradePane;
@@ -70,21 +67,19 @@ public class InstructorController {
         this.app = app;
         this.instructor = instructor;
 
-        UiKit.prepareList(rosterList);
-        rosterList.getSelectionModel().selectedIndexProperty().addListener(
-                new ChangeListener<Number>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> obs,
-                            Number oldIndex, Number newIndex) {
-                        if (updating) {
-                            return;
-                        }
-                        int index = newIndex.intValue();
-                        selectedEntry = (index >= 0 && index < roster.size())
-                                ? roster.get(index) : null;
-                        showGradePane();
-                    }
-                });
+        rosterList.setColumns(new String[] {"STUDENT", "ID", "GRADE"},
+                new double[] {4, 2, 2});
+        rosterList.setSelectionListener(new RowTable.SelectionListener() {
+            @Override
+            public void selected(int index) {
+                if (updating) {
+                    return;
+                }
+                selectedEntry = (index >= 0 && index < roster.size())
+                        ? roster.get(index) : null;
+                showGradePane();
+            }
+        });
 
         ArrayList<CourseSection> mine = mySections();
         updating = true;
@@ -127,21 +122,20 @@ public class InstructorController {
         if (section == null) {
             return;
         }
-        ArrayList<String> lines = new ArrayList<>();
+        updating = true;
+        rosterList.clear();
         for (RosterEntry entry : roster) {
             Student student = entry.getStudent();
             Enrollment enrollment = entry.getEnrollment();
             String grade = enrollment.getGrade() == null
                     ? enrollment.getStatus().toString()
                     : enrollment.getGrade().toString();
-            lines.add(student.getName() + " (" + student.getUserId() + ")"
-                    + "  •  " + grade);
+            rosterList.addRow(new String[] {student.getName(),
+                    String.valueOf(student.getUserId()), grade});
         }
-        if (lines.isEmpty()) {
-            lines.add("No students in this section yet.");
+        if (roster.isEmpty()) {
+            rosterList.showEmpty("No students in this section yet.");
         }
-        updating = true;
-        rosterList.setItems(FXCollections.observableArrayList(lines));
         updating = false;
     }
 
