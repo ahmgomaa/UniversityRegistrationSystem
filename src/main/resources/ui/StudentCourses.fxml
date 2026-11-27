@@ -3,12 +3,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StudentCoursesController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="My courses" />
     <Label fx:id="emptyLabel" maxWidth="Infinity" managed="false" styleClass="empty-state" text="No enrollments yet. Open Register to pick your first course." visible="false" wrapText="true" />
     <VBox fx:id="content" spacing="12" VBox.vgrow="ALWAYS">
-        <ListView fx:id="coursesList" id="courses-list" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+        <RowTable fx:id="coursesList" id="courses-list" VBox.vgrow="ALWAYS" />
         <Button id="courses-withdraw-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onWithdraw" styleClass="primary-button" text="Withdraw Selected Course" />
         <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
     </VBox>

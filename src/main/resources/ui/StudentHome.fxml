@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StudentHomeController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label fx:id="titleLabel" styleClass="title" text="Welcome" />
@@ -26,6 +27,6 @@
         </VBox>
     </HBox>
     <Label styleClass="section-label" text="MY COURSES NOW" />
-    <ListView fx:id="coursesList" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+    <RowTable fx:id="coursesList" VBox.vgrow="ALWAYS" />
     <Button id="home-register-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onRegister" styleClass="primary-button" text="Register for courses" />
 </VBox>

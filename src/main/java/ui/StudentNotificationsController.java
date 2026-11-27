@@ -1,27 +1,26 @@
 package ui;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
 import model.Notification;
 import model.Student;
-
-import java.util.ArrayList;
 
 public class StudentNotificationsController {
 
     @FXML
-    private ListView<String> notificationsList;
+    private RowTable notificationsList;
 
     public void init(AppContext context, Student student) {
-        ArrayList<String> lines = new ArrayList<>();
+        notificationsList.setSelectable(false);
+        notificationsList.setColumns(new String[] {"SENT", "MESSAGE"},
+                new double[] {3, 8});
+        int count = 0;
         for (Notification notification : context.getNotifications().getInbox(student)) {
-            lines.add(notification.getSentAt() + " — " + notification.getMessage());
+            notificationsList.addRow(new String[] {
+                    String.valueOf(notification.getSentAt()), notification.getMessage()});
+            count++;
         }
-        if (lines.isEmpty()) {
-            lines.add("No notifications.");
+        if (count == 0) {
+            notificationsList.showEmpty("No notifications.");
         }
-        UiKit.prepareList(notificationsList);
-        notificationsList.setItems(FXCollections.observableArrayList(lines));
     }
 }

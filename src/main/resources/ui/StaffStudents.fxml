@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StaffStudentsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="All students" />
@@ -20,8 +21,8 @@
             <Label styleClass="stat-caption" text="ON PROBATION" />
         </VBox>
     </HBox>
-    <ListView fx:id="studentsList" id="staff-students-list" styleClass="inset-list" VBox.vgrow="ALWAYS" />
-    <Label fx:id="detailLabel" managed="false" maxWidth="Infinity" styleClass="card" visible="false" wrapText="true" />
+    <RowTable fx:id="studentsList" id="staff-students-list" VBox.vgrow="ALWAYS" />
+    <Label fx:id="detailLabel" minHeight="-Infinity" managed="false" maxWidth="Infinity" styleClass="card" visible="false" wrapText="true" />
     <VBox fx:id="actionsBox" managed="false" spacing="12" visible="false">
         <Label fx:id="actionsLabel" styleClass="section-label" />
         <Button id="staff-student-status-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStatus" styleClass="plain-button" text="Update Status" />

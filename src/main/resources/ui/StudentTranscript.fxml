@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StudentTranscriptController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="Transcript" />
@@ -16,5 +17,5 @@
             <Label styleClass="stat-caption" text="EARNED CREDITS" />
         </VBox>
     </HBox>
-    <ListView fx:id="transcriptList" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+    <RowTable fx:id="transcriptList" VBox.vgrow="ALWAYS" />
 </VBox>

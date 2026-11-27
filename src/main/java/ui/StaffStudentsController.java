@@ -1,11 +1,7 @@
 package ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import model.Student;
 
@@ -14,7 +10,7 @@ import java.util.ArrayList;
 public class StaffStudentsController {
 
     @FXML
-    private ListView<String> studentsList;
+    private RowTable studentsList;
 
     @FXML
     private Label totalValue;
@@ -41,11 +37,19 @@ public class StaffStudentsController {
         this.context = context;
         this.parent = parent;
 
-        ArrayList<String> lines = new ArrayList<>();
+        studentsList.setColumns(
+                new String[] {"STUDENT", "ID", "STATUS", "CGPA", "PROGRAM", "ADVISOR"},
+                new double[] {3, 2, 3, 2, 4, 3});
         int active = 0;
         int probation = 0;
         for (Student student : context.getStore().getStudents()) {
-            lines.add(describe(student));
+            String advisor = student.getAdvisor() == null
+                    ? "None" : student.getAdvisor().getName();
+            studentsList.addRow(new String[] {student.getName(),
+                    String.valueOf(student.getUserId()),
+                    student.getAcademicStatus().name(),
+                    UiKit.formatGpa(student.getAcademicRecord().calculateCGPA()),
+                    student.getProgram().getName(), advisor});
             if (student.getAcademicStatus().name().equals("ACTIVE")) {
                 active++;
             }
@@ -56,36 +60,28 @@ public class StaffStudentsController {
         totalValue.setText(String.valueOf(context.getStore().getStudents().size()));
         activeValue.setText(String.valueOf(active));
         probationValue.setText(String.valueOf(probation));
-        if (lines.isEmpty()) {
-            lines.add("No students.");
+        if (context.getStore().getStudents().isEmpty()) {
+            studentsList.showEmpty("No students.");
         }
-        UiKit.prepareList(studentsList);
-        studentsList.setItems(FXCollections.observableArrayList(lines));
 
-        studentsList.getSelectionModel().selectedIndexProperty().addListener(
-                new ChangeListener<Number>() {
-                    @Override
-                    public void changed(ObservableValue<? extends Number> obs,
-                            Number oldIndex, Number newIndex) {
-                        int index = newIndex.intValue();
-                        ArrayList<Student> students = context.getStore().getStudents();
-                        if (index < 0 || index >= students.size()) {
-                            return;
-                        }
-                        Student selected = students.get(index);
-                        parent.setSelectedStudent(selected);
-                        detailLabel.setText(describe(selected)
-                                + "\n\nAdvisor: "
-                                + (selected.getAdvisor() == null
-                                        ? "None" : selected.getAdvisor().getName()));
-                        actionsLabel.setText(
-                                ("Actions for " + selected.getName()).toUpperCase());
-                        detailLabel.setVisible(true);
-                        detailLabel.setManaged(true);
-                        actionsBox.setVisible(true);
-                        actionsBox.setManaged(true);
-                    }
-                });
+        studentsList.setSelectionListener(new RowTable.SelectionListener() {
+            @Override
+            public void selected(int index) {
+                ArrayList<Student> students = context.getStore().getStudents();
+                if (index < 0 || index >= students.size()) {
+                    return;
+                }
+                Student selected = students.get(index);
+                parent.setSelectedStudent(selected);
+                detailLabel.setText(describe(selected));
+                actionsLabel.setText(
+                        ("Actions for " + selected.getName()).toUpperCase());
+                detailLabel.setVisible(true);
+                detailLabel.setManaged(true);
+                actionsBox.setVisible(true);
+                actionsBox.setManaged(true);
+            }
+        });
     }
 
     @FXML

@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import model.CourseSection;
 import model.Semester;
@@ -42,7 +41,7 @@ public class StudentRegisterController {
     private Label sectionsLabel;
 
     @FXML
-    private ListView<String> sectionsList;
+    private RowTable sectionsList;
 
     @FXML
     private VBox confirmPane;
@@ -87,7 +86,9 @@ public class StudentRegisterController {
         this.context = context;
         this.student = student;
         this.parent = parent;
-        UiKit.prepareList(sectionsList);
+        sectionsList.setColumns(
+                new String[] {"CODE", "COURSE", "NO.", "INSTRUCTOR", "SCHEDULE", "SEATS"},
+                new double[] {3, 4, 1.5, 3, 5, 2});
         ArrayList<Semester> semesters = context.getStore().getSemesters();
         semesterBox.setItems(FXCollections.observableArrayList(semesters));
         if (!semesters.isEmpty()) {
@@ -128,15 +129,26 @@ public class StudentRegisterController {
 
     private void fillSections() {
         sections = context.getStore().getSectionsInSemester(regSemester);
-        ArrayList<String> lines = new ArrayList<>();
+        sectionsList.clear();
         for (CourseSection section : sections) {
-            lines.add(BrowseController.describeWithSeats(context, section));
+            StringBuilder schedule = new StringBuilder();
+            for (model.MeetingTime meeting : section.getMeetings()) {
+                if (schedule.length() > 0) {
+                    schedule.append(", ");
+                }
+                schedule.append(meeting);
+            }
+            int left = BrowseController.seatsLeft(context, section);
+            sectionsList.addRow(new String[] {section.getCourse().getCourseCode(),
+                    section.getCourse().getCourseName(),
+                    String.valueOf(section.getSectionNo()),
+                    section.getInstructor().getName(), schedule.toString(),
+                    left <= 0 ? "FULL" : left + " left"});
         }
-        if (lines.isEmpty()) {
-            lines.add("No sections in this semester.");
+        if (sections.isEmpty()) {
+            sectionsList.showEmpty("No sections in this semester.");
         }
         sectionsLabel.setText("SECTIONS IN " + regSemester.toString().toUpperCase());
-        sectionsList.setItems(FXCollections.observableArrayList(lines));
     }
 
     private void fillDetail() {
@@ -185,7 +197,7 @@ public class StudentRegisterController {
 
     @FXML
     private void onSectionContinue() {
-        int index = sectionsList.getSelectionModel().getSelectedIndex();
+        int index = sectionsList.getSelectedIndex();
         if (index < 0 || index >= sections.size()) {
             UiKit.showStatus(statusLabel, false, "Select a section first.");
             return;
