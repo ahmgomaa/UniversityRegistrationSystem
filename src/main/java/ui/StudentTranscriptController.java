@@ -1,6 +1,7 @@
 package ui;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Label;
 import model.Enrollment;
 import model.Student;
@@ -16,9 +17,12 @@ public class StudentTranscriptController {
     private Label earnedValue;
 
     @FXML
+    private ScrollPane transcriptListScroll;
+
     private RowTable transcriptList;
 
     public void init(AppContext context, Student student) {
+        transcriptList = new RowTable(transcriptListScroll);
         Transcript transcript = context.getReports().transcript(student);
         transcriptList.setSelectable(false);
         transcriptList.setColumns(new String[] {"CODE", "COURSE", "GRADE"},
