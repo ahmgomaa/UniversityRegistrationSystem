@@ -1,9 +1,7 @@
 package ui;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import model.CourseSection;
 import model.Enrollment;
@@ -23,7 +21,7 @@ public class StudentCoursesController {
     private VBox content;
 
     @FXML
-    private ListView<String> coursesList;
+    private RowTable coursesList;
 
     @FXML
     private Label statusLabel;
@@ -35,23 +33,24 @@ public class StudentCoursesController {
     public void init(AppContext context, Student student) {
         this.context = context;
         this.student = student;
-        UiKit.prepareList(coursesList);
+        coursesList.setColumns(
+                new String[] {"CODE", "COURSE", "SECTION", "STATUS", "GRADE"},
+                new double[] {2, 5, 2, 2, 2});
         show(null, false);
     }
 
     private void show(String message, boolean ok) {
         enrollments = student.getAcademicRecord().getEnrollments();
-        ArrayList<String> lines = new ArrayList<>();
+        coursesList.clear();
         for (Enrollment enrollment : enrollments) {
             CourseSection section = enrollment.getCourseSection();
             String grade = enrollment.getGrade() == null
-                    ? "" : "  •  Grade: " + enrollment.getGrade();
-            lines.add(section.getCourse().getCourseCode() + " — "
-                    + section.getCourse().getCourseName()
-                    + " (Section " + section.getSectionNo() + ")"
-                    + "  •  " + enrollment.getStatus() + grade);
+                    ? "-" : enrollment.getGrade().toString();
+            coursesList.addRow(new String[] {section.getCourse().getCourseCode(),
+                    section.getCourse().getCourseName(),
+                    String.valueOf(section.getSectionNo()),
+                    enrollment.getStatus().toString(), grade});
         }
-        coursesList.setItems(FXCollections.observableArrayList(lines));
         UiKit.clearStatus(statusLabel);
         if (message != null) {
             UiKit.showStatus(statusLabel, ok, message);
@@ -65,7 +64,7 @@ public class StudentCoursesController {
 
     @FXML
     private void onWithdraw() {
-        int index = coursesList.getSelectionModel().getSelectedIndex();
+        int index = coursesList.getSelectedIndex();
         if (index < 0 || index >= enrollments.size()) {
             UiKit.showStatus(statusLabel, false, "Select a course first.");
             return;
