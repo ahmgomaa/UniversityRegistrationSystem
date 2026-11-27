@@ -82,6 +82,13 @@ public class JavaFxApp extends Application {
 
     public void toggleAppearance() {
         darkAppearance = !darkAppearance;
+        if (stage != null && stage.getScene() != null) {
+            if (darkAppearance) {
+                stage.getScene().getRoot().getStyleClass().add("dark");
+            } else {
+                stage.getScene().getRoot().getStyleClass().remove("dark");
+            }
+        }
         if (darkAppearance) {
             Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
         } else {
@@ -135,4 +142,3 @@ public class JavaFxApp extends Application {
         return signedInUser;
     }
 }
-
