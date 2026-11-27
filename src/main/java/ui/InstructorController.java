@@ -2,6 +2,7 @@ package ui;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -33,6 +34,8 @@ public class InstructorController {
     private VBox rosterPane;
 
     @FXML
+    private ScrollPane rosterListScroll;
+
     private RowTable rosterList;
 
     @FXML
@@ -63,6 +66,7 @@ public class InstructorController {
     private boolean updating;
 
     public void init(AppContext context, JavaFxApp app, Instructor instructor) {
+        rosterList = new RowTable(rosterListScroll);
         this.context = context;
         this.app = app;
         this.instructor = instructor;
