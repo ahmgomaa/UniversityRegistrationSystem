@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentGraduationController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Graduation eligibility" />
+    <VBox spacing="10" styleClass="card">
+        <Label fx:id="line1" wrapText="true" />
+        <Label fx:id="line2" />
+        <Label fx:id="line3" />
+    </VBox>
+    <VBox spacing="10" styleClass="card">
+        <Label styleClass="section-label" text="CREDIT PROGRESS" />
+        <Label fx:id="creditsLabel" />
+        <ProgressBar fx:id="creditsProgress" maxWidth="Infinity" prefHeight="8" progress="0.0" />
+    </VBox>
+</VBox>

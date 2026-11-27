@@ -1,11 +1,9 @@
 package ui;
 
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -16,7 +14,7 @@ import model.Semester;
 
 import java.util.ArrayList;
 
-public class BrowseView {
+public class BrowseController {
 
     private static final double COL_COURSE = 330;
     private static final double COL_SECTION = 70;
@@ -25,108 +23,82 @@ public class BrowseView {
     private static final double COL_SEATS = 90;
     private static final double COL_STATUS = 90;
 
-    private final AppContext context;
-    private final JavaFxApp app;
+    @FXML
+    private Label sectionsValue;
 
-    public BrowseView(AppContext context, JavaFxApp app) {
+    @FXML
+    private Label seatsValue;
+
+    @FXML
+    private Label fullValue;
+
+    @FXML
+    private ComboBox<Semester> semesterBox;
+
+    @FXML
+    private VBox table;
+
+    @FXML
+    private HBox headerRow;
+
+    private AppContext context;
+    private JavaFxApp app;
+    private boolean ready;
+
+    public void init(AppContext context, JavaFxApp app) {
         this.context = context;
         this.app = app;
-    }
-
-    public VBox build() {
         ArrayList<Semester> semesters = context.getStore().getSemesters();
-        ComboBox<Semester> semesterBox = new ComboBox<>(
-                FXCollections.observableArrayList(semesters));
+        semesterBox.setItems(FXCollections.observableArrayList(semesters));
         if (!semesters.isEmpty()) {
             semesterBox.setValue(semesters.get(0));
         }
-        semesterBox.setMaxWidth(Double.MAX_VALUE);
-
-        VBox sectionsCard = UiKit.statCard("0", "SECTIONS", UiKit.ACCENT);
-        VBox seatsCard = UiKit.statCard("0", "SEATS OPEN", UiKit.GREEN);
-        VBox fullCard = UiKit.statCard("0", "FULL", UiKit.RED);
-        HBox stats = UiKit.statRow(sectionsCard, seatsCard, fullCard);
-
-        VBox table = UiKit.insetCard();
-
-        Runnable refresh = new Runnable() {
-            @Override
-            public void run() {
-            Semester semester = semesterBox.getValue();
-            ArrayList<CourseSection> sections = new ArrayList<>();
-            if (semester != null) {
-                sections.addAll(context.getStore().getSectionsInSemester(semester));
-            }
-
-            table.getChildren().clear();
-            table.getChildren().add(headerRow());
-            int open = 0;
-            int full = 0;
-            int seats = 0;
-            for (CourseSection section : sections) {
-                int left = seatsLeft(context, section);
-                if (left <= 0) {
-                    full++;
-                } else {
-                    open++;
-                    seats += left;
-                }
-                table.getChildren().add(UiKit.separator());
-                table.getChildren().add(sectionRow(section, left));
-            }
-            if (sections.isEmpty()) {
-                table.getChildren().add(UiKit.separator());
-                table.getChildren().add(UiKit.emptyState(
-                        "No sections in this semester."));
-            }
-
-            Label sectionsValue = (Label) sectionsCard.getChildren().get(0);
-            Label seatsValue = (Label) seatsCard.getChildren().get(0);
-            Label fullValue = (Label) fullCard.getChildren().get(0);
-            sectionsValue.setText(String.valueOf(sections.size()));
-            seatsValue.setText(String.valueOf(seats));
-            fullValue.setText(String.valueOf(full));
-            }
-        };
-        semesterBox.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                refresh.run();
-            }
-        });
-        refresh.run();
-
-        Button backButton = UiKit.plainButton("Back to Sign In");
-        backButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                app.showLogin();
-            }
-        });
-
-        VBox root = new VBox(12,
-                UiKit.largeTitle("Browse Courses"),
-                UiKit.caption("Live seat availability, no sign-in needed."),
-                stats,
-                UiKit.sectionLabel("Semester"), semesterBox,
-                UiKit.sectionLabel("Sections"), table,
-                backButton);
-        root.setPadding(new Insets(20));
-        UiKit.applyGroupedBackground(root);
-        return root;
+        ready = true;
+        refresh();
     }
 
-    private static HBox headerRow() {
-        HBox row = new HBox(12,
-                UiKit.columnHeader("Course", COL_COURSE),
-                UiKit.columnHeader("Sec", COL_SECTION),
-                UiKit.columnHeader("Instructor", COL_INSTRUCTOR),
-                UiKit.columnHeader("Schedule", COL_SCHEDULE),
-                UiKit.columnHeader("Seats", COL_SEATS),
-                UiKit.columnHeader("Status", COL_STATUS));
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(10, 16, 10, 16));
-        return row;
+    @FXML
+    private void onSemesterChosen() {
+        if (ready) {
+            refresh();
+        }
+    }
+
+    @FXML
+    private void onBack() {
+        app.showLogin();
+    }
+
+    private void refresh() {
+        Semester semester = semesterBox.getValue();
+        ArrayList<CourseSection> sections = new ArrayList<>();
+        if (semester != null) {
+            sections.addAll(context.getStore().getSectionsInSemester(semester));
+        }
+
+        table.getChildren().setAll(headerRow);
+        int open = 0;
+        int full = 0;
+        int seats = 0;
+        for (CourseSection section : sections) {
+            int left = seatsLeft(context, section);
+            if (left <= 0) {
+                full++;
+            } else {
+                open++;
+                seats += left;
+            }
+            table.getChildren().add(UiKit.separator());
+            table.getChildren().add(sectionRow(section, left));
+        }
+        if (sections.isEmpty()) {
+            table.getChildren().add(UiKit.separator());
+            table.getChildren().add(UiKit.emptyState("No sections in this semester."));
+        }
+
+        sectionsValue.setText(String.valueOf(sections.size()));
+        seatsValue.setText(String.valueOf(seats));
+        fullValue.setText(String.valueOf(full));
     }
 
     private HBox sectionRow(CourseSection section, int seatsLeft) {
@@ -199,4 +171,3 @@ public class BrowseView {
         return text.toString();
     }
 }
-

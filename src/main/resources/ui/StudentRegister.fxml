@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentRegisterController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label fx:id="titleLabel" styleClass="title" text="Register — Step 1 of 3" />
+    <HBox fx:id="stepBox" spacing="8">
+        <Label fx:id="step1Label" styleClass="step-pill, step-pill-active" text="1. Semester" />
+        <Label fx:id="step2Label" styleClass="step-pill" text="2. Section" />
+        <Label fx:id="step3Label" styleClass="step-pill" text="3. Confirm" />
+    </HBox>
+    <VBox fx:id="semesterPane" spacing="12">
+        <Label styleClass="section-label" text="CHOOSE A SEMESTER" />
+        <ComboBox fx:id="semesterBox" id="register-semester-box" maxWidth="Infinity" />
+        <Button id="register-continue-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSemesterContinue" styleClass="primary-button" text="Continue" />
+    </VBox>
+    <VBox fx:id="sectionPane" managed="false" spacing="12" visible="false">
+        <Label fx:id="sectionsLabel" styleClass="section-label" text="SECTIONS" />
+        <ListView fx:id="sectionsList" id="register-sections-list" styleClass="inset-list" />
+        <Button id="register-section-continue-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSectionContinue" styleClass="primary-button" text="Continue" />
+        <Button id="register-back-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onBackToSemester" styleClass="plain-button" text="Back" />
+    </VBox>
+    <VBox fx:id="confirmPane" managed="false" spacing="12" visible="false">
+        <Label fx:id="confirmLabel" styleClass="section-label" text="CONFIRM REGISTRATION" />
+        <VBox spacing="10" styleClass="card">
+            <Label fx:id="detailCourse" />
+            <Label fx:id="detailSection" />
+            <Label fx:id="detailInstructor" />
+            <Label fx:id="detailSchedule" />
+            <Label fx:id="detailSeats" />
+        </VBox>
+        <Button fx:id="confirmButton" id="register-confirm-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onConfirm" styleClass="primary-button" text="Confirm registration" />
+        <Button fx:id="chooseAnotherButton" id="register-choose-another-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onBackToSection" styleClass="plain-button" text="Choose another section" />
+        <Button fx:id="againButton" id="register-again-button" managed="false" maxWidth="Infinity" mnemonicParsing="false" onAction="#onAgain" styleClass="primary-button" text="Register another course" visible="false" />
+    </VBox>
+    <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
+    <Button id="register-home-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onHome" styleClass="plain-button" text="Back to Home" />
+</VBox>

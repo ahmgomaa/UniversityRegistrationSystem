@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="staffRoot" fx:controller="ui.StaffController" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <left>
+        <VBox prefWidth="180" spacing="6" styleClass="nav-pane">
+            <padding>
+                <Insets bottom="16" left="16" right="10" top="16" />
+            </padding>
+            <Button fx:id="navStudents" id="staff-nav-students" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStudents" styleClass="nav-button" text="Students" />
+            <Button fx:id="navStatus" id="staff-nav-status" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStatus" styleClass="nav-button" text="Update Status" />
+            <Button fx:id="navAdvisor" id="staff-nav-advisor" maxWidth="Infinity" mnemonicParsing="false" onAction="#onAdvisor" styleClass="nav-button" text="Assign Advisor" />
+            <Button fx:id="navRoster" id="staff-nav-roster" maxWidth="Infinity" mnemonicParsing="false" onAction="#onRoster" styleClass="nav-button" text="Section Roster" />
+            <Region VBox.vgrow="ALWAYS" />
+            <Button id="staff-signout" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSignOut" styleClass="plain-button" text="Sign Out" />
+        </VBox>
+    </left>
+</BorderPane>

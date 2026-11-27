@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentTranscriptController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Transcript" />
+    <HBox spacing="12">
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="cgpaValue" styleClass="stat-value, accent-text" text="0.00" />
+            <Label styleClass="stat-caption" text="CGPA" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="earnedValue" styleClass="stat-value, green-text" text="0" />
+            <Label styleClass="stat-caption" text="EARNED CREDITS" />
+        </VBox>
+    </HBox>
+    <ListView fx:id="transcriptList" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+</VBox>

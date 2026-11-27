@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.BrowseController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="large-title" text="Browse Courses" />
+    <Label styleClass="caption" text="Live seat availability, no sign-in needed." />
+    <HBox spacing="12">
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="sectionsValue" styleClass="stat-value, accent-text" text="0" />
+            <Label styleClass="stat-caption" text="SECTIONS" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="seatsValue" styleClass="stat-value, green-text" text="0" />
+            <Label styleClass="stat-caption" text="SEATS OPEN" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="fullValue" styleClass="stat-value, red-text" text="0" />
+            <Label styleClass="stat-caption" text="FULL" />
+        </VBox>
+    </HBox>
+    <Label styleClass="section-label" text="SEMESTER" />
+    <ComboBox fx:id="semesterBox" maxWidth="Infinity" onAction="#onSemesterChosen" />
+    <Label styleClass="section-label" text="SECTIONS" />
+    <VBox fx:id="table" styleClass="inset-card">
+        <HBox fx:id="headerRow" alignment="CENTER_LEFT" spacing="12" styleClass="table-header-row">
+            <Label minWidth="330" prefWidth="330" styleClass="column-header" text="COURSE" />
+            <Label minWidth="70" prefWidth="70" styleClass="column-header" text="SEC" />
+            <Label minWidth="190" prefWidth="190" styleClass="column-header" text="INSTRUCTOR" />
+            <Label minWidth="330" prefWidth="330" styleClass="column-header" text="SCHEDULE" />
+            <Label minWidth="90" prefWidth="90" styleClass="column-header" text="SEATS" />
+            <Label minWidth="90" prefWidth="90" styleClass="column-header" text="STATUS" />
+        </HBox>
+    </VBox>
+    <Button mnemonicParsing="false" onAction="#onBack" styleClass="plain-button" text="Back to Sign In" maxWidth="Infinity" />
+</VBox>
