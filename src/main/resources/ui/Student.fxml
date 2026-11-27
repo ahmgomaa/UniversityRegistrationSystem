@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="studentRoot" fx:controller="ui.StudentController" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <left>
+        <VBox prefWidth="180" spacing="6" styleClass="nav-pane">
+            <padding>
+                <Insets bottom="16" left="16" right="10" top="16" />
+            </padding>
+            <Button fx:id="navHome" id="nav-home" maxWidth="Infinity" mnemonicParsing="false" onAction="#onHome" styleClass="nav-button" text="Home" />
+            <Button fx:id="navCourses" id="nav-courses" maxWidth="Infinity" mnemonicParsing="false" onAction="#onCourses" styleClass="nav-button" text="My Courses" />
+            <Button fx:id="navRegister" id="nav-register" maxWidth="Infinity" mnemonicParsing="false" onAction="#onRegister" styleClass="nav-button" text="Register" />
+            <Button fx:id="navTranscript" id="nav-transcript" maxWidth="Infinity" mnemonicParsing="false" onAction="#onTranscript" styleClass="nav-button" text="Transcript" />
+            <Button fx:id="navGraduation" id="nav-graduation" maxWidth="Infinity" mnemonicParsing="false" onAction="#onGraduation" styleClass="nav-button" text="Graduation" />
+            <Button fx:id="navNotifications" id="nav-notifications" maxWidth="Infinity" mnemonicParsing="false" onAction="#onNotifications" styleClass="nav-button" text="Notifications" />
+            <Button fx:id="navSettings" id="nav-settings" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSettings" styleClass="nav-button" text="Settings" />
+            <Region VBox.vgrow="ALWAYS" />
+            <Button id="nav-signout" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSignOut" styleClass="plain-button" text="Sign Out" />
+        </VBox>
+    </left>
+</BorderPane>
