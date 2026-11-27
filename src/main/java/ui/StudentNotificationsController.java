@@ -20,7 +20,7 @@ public class StudentNotificationsController {
         int count = 0;
         for (Notification notification : context.getNotifications().getInbox(student)) {
             notificationsList.addRow(new String[] {
-                    String.valueOf(notification.getSentAt()), notification.getMessage()});
+                    String.valueOf(notification.getSentAt()).replace('T', ' ').substring(0, 16), notification.getMessage()});
             count++;
         }
         if (count == 0) {
