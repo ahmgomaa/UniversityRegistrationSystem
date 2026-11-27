@@ -26,6 +26,6 @@
         </VBox>
     </HBox>
     <Label styleClass="section-label" text="MY COURSES NOW" />
-    <ListView fx:id="coursesList" styleClass="inset-list" />
+    <ListView fx:id="coursesList" styleClass="inset-list" VBox.vgrow="ALWAYS" />
     <Button id="home-register-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onRegister" styleClass="primary-button" text="Register for courses" />
 </VBox>
