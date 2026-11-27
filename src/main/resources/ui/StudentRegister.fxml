@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.StudentRegisterController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label fx:id="titleLabel" styleClass="title" text="Register — Step 1 of 3" />
@@ -18,7 +19,7 @@
     </VBox>
     <VBox fx:id="sectionPane" managed="false" spacing="12" visible="false">
         <Label fx:id="sectionsLabel" styleClass="section-label" text="SECTIONS" />
-        <ListView fx:id="sectionsList" id="register-sections-list" styleClass="inset-list" />
+        <RowTable fx:id="sectionsList" id="register-sections-list" />
         <Button id="register-section-continue-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSectionContinue" styleClass="primary-button" text="Continue" />
         <Button id="register-back-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onBackToSemester" styleClass="plain-button" text="Back" />
     </VBox>
