@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentNotificationsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Notifications" />
+    <ScrollPane fx:id="notificationsListScroll" fitToWidth="true" hbarPolicy="NEVER" minHeight="120" prefHeight="220" styleClass="row-table" VBox.vgrow="ALWAYS" />
+</VBox>

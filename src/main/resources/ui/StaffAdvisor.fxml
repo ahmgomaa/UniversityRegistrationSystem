@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StaffAdvisorController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Assign advisor" />
+    <Label styleClass="section-label" text="STUDENT" />
+    <ComboBox fx:id="studentBox" id="staff-student-box" maxWidth="Infinity" />
+    <Label styleClass="section-label" text="ADVISOR" />
+    <ComboBox fx:id="advisorBox" id="staff-advisor-box" maxWidth="Infinity" />
+    <Button id="staff-assign-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onAssign" styleClass="primary-button" text="Assign Advisor" />
+    <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
+</VBox>

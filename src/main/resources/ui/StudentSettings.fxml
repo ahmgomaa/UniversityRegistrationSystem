@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentSettingsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Change password" />
+    <VBox spacing="10" styleClass="card">
+        <PasswordField fx:id="oldField" id="settings-old-password" promptText="Current 4-digit password" />
+        <PasswordField fx:id="newField" id="settings-new-password" promptText="New 4-digit password" />
+        <Button id="settings-change-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onChange" styleClass="primary-button" text="Change Password" />
+        <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
+    </VBox>
+    <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#onSignOut" styleClass="plain-button" text="Sign Out" />
+</VBox>

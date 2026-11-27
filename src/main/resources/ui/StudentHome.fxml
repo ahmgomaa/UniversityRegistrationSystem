@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StudentHomeController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label fx:id="titleLabel" styleClass="title" text="Welcome" />
+    <VBox spacing="10" styleClass="card">
+        <Label fx:id="identityLabel" styleClass="bold-text" />
+        <Label fx:id="standingLabel" styleClass="caption" wrapText="true" />
+    </VBox>
+    <HBox spacing="12">
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="cgpaValue" styleClass="stat-value, accent-text" text="0.00" />
+            <Label styleClass="stat-caption" text="CGPA" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="creditsValue" styleClass="stat-value, green-text" text="0 / 0" />
+            <Label styleClass="stat-caption" text="CREDITS EARNED" />
+            <ProgressBar fx:id="creditsProgress" maxWidth="Infinity" prefHeight="8" progress="0.0" styleClass="green-progress" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="unreadValue" styleClass="stat-value, gray-text" text="0" />
+            <Label styleClass="stat-caption" text="NOTIFICATIONS" />
+        </VBox>
+    </HBox>
+    <Label styleClass="section-label" text="MY COURSES NOW" />
+    <ScrollPane fx:id="coursesListScroll" fitToWidth="true" hbarPolicy="NEVER" minHeight="120" prefHeight="220" styleClass="row-table" VBox.vgrow="ALWAYS" />
+    <Button id="home-register-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onRegister" styleClass="primary-button" text="Register for courses" />
+</VBox>
