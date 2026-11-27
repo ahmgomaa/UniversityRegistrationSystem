@@ -9,6 +9,6 @@
     <Label styleClass="section-label" text="SECTION (REGISTRAR ONLY)" />
     <ComboBox fx:id="sectionBox" id="staff-section-box" maxWidth="Infinity" onAction="#onSectionChosen" />
     <Label styleClass="section-label" text="ROSTER" />
-    <ListView fx:id="rosterList" id="staff-roster-list" styleClass="inset-list" />
+    <ListView fx:id="rosterList" id="staff-roster-list" styleClass="inset-list" VBox.vgrow="ALWAYS" />
     <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
 </VBox>
