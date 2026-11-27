@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="TOP_CENTER" fx:controller="ui.LoginController" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="32" />
+    </padding>
+    <VBox alignment="TOP_CENTER" maxWidth="460" prefWidth="460" spacing="14">
+        <Label styleClass="large-title" text="University Registration" />
+        <Label alignment="CENTER" maxWidth="420" styleClass="caption" text="Register for courses, track your transcript and stay on top of graduation — all in one place." textAlignment="CENTER" wrapText="true" />
+        <VBox maxWidth="420" spacing="10" styleClass="card">
+            <TextField fx:id="idField" id="login-id-field" onAction="#onSignIn" promptText="User ID (e.g. CS-1001)" />
+            <PasswordField fx:id="passwordField" id="login-password-field" onAction="#onSignIn" promptText="Password (4 digits)" />
+            <Label fx:id="errorLabel" maxWidth="Infinity" styleClass="error-text" wrapText="true" />
+            <Button fx:id="signInButton" id="login-signin-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onSignIn" styleClass="primary-button" text="Sign In" />
+            <Label styleClass="caption" text="Students look like CS-1001, instructors IN-101, staff AS-11. The password is 4 digits." wrapText="true" />
+        </VBox>
+        <Button maxWidth="420" mnemonicParsing="false" onAction="#onBrowse" styleClass="plain-button" text="Browse Sections as Visitor" />
+    </VBox>
+</VBox>
