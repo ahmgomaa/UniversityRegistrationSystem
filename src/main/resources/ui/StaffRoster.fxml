@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StaffRosterController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="Section roster" />
+    <Label styleClass="section-label" text="SECTION (REGISTRAR ONLY)" />
+    <ComboBox fx:id="sectionBox" id="staff-section-box" maxWidth="Infinity" onAction="#onSectionChosen" />
+    <Label styleClass="section-label" text="ROSTER" />
+    <ListView fx:id="rosterList" id="staff-roster-list" styleClass="inset-list" />
+    <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
+</VBox>
