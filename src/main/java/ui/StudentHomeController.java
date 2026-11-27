@@ -1,16 +1,13 @@
 package ui;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import model.CourseSection;
 import model.Enrollment;
 import model.Student;
 import model.enums.EnrollmentStatus;
 
-import java.util.ArrayList;
 
 public class StudentHomeController {
 
@@ -36,7 +33,7 @@ public class StudentHomeController {
     private Label unreadValue;
 
     @FXML
-    private ListView<String> coursesList;
+    private RowTable coursesList;
 
     private StudentController parent;
 
@@ -58,30 +55,27 @@ public class StudentHomeController {
         unreadValue.setText(String.valueOf(unread));
         unreadValue.getStyleClass().add(unread > 0 ? "orange-text" : "gray-text");
 
-        ArrayList<String> active = activeEnrollmentLines(student);
-        if (active.isEmpty()) {
-            active.add("You are not registered in any course yet.");
+        coursesList.setSelectable(false);
+        coursesList.setColumns(new String[] {"CODE", "COURSE", "SECTION", "CREDITS"},
+                new double[] {2, 6, 2, 2});
+        int shown = 0;
+        for (Enrollment enrollment : student.getAcademicRecord().getEnrollments()) {
+            if (enrollment.getStatus() == EnrollmentStatus.ENROLLED) {
+                CourseSection section = enrollment.getCourseSection();
+                coursesList.addRow(new String[] {section.getCourse().getCourseCode(),
+                        section.getCourse().getCourseName(),
+                        String.valueOf(section.getSectionNo()),
+                        String.valueOf(section.getCourse().getCreditHours())});
+                shown++;
+            }
         }
-        UiKit.prepareList(coursesList);
-        coursesList.setItems(FXCollections.observableArrayList(active));
+        if (shown == 0) {
+            coursesList.showEmpty("You are not registered in any course yet.");
+        }
     }
 
     @FXML
     private void onRegister() {
         parent.showRegister();
-    }
-
-    private ArrayList<String> activeEnrollmentLines(Student student) {
-        ArrayList<String> lines = new ArrayList<>();
-        for (Enrollment enrollment : student.getAcademicRecord().getEnrollments()) {
-            if (enrollment.getStatus() == EnrollmentStatus.ENROLLED) {
-                CourseSection section = enrollment.getCourseSection();
-                lines.add(section.getCourse().getCourseCode() + " — "
-                        + section.getCourse().getCourseName()
-                        + " (Section " + section.getSectionNo() + ")"
-                        + "  •  " + section.getCourse().getCreditHours() + " credits");
-            }
-        }
-        return lines;
     }
 }
