@@ -76,6 +76,13 @@ public class StudentHomeController {
         if (shown == 0) {
             coursesList.showEmpty("You are not registered in any course yet.");
         }
+        int tableRows = shown == 0 ? 1 : shown;
+        if (tableRows > 6) {
+            tableRows = 6;
+        }
+        double tableHeight = Math.max(120, 40 + 40 * tableRows);
+        coursesListScroll.setPrefHeight(tableHeight);
+        coursesListScroll.setMaxHeight(tableHeight);
     }
 
     @FXML
