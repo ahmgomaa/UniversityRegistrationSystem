@@ -254,3 +254,62 @@
 .table-row-selected, .table-row-selected:hover {
     -fx-background-color: rgba(0,122,255,0.15);
 }
+
+.dark.screen-bg, .dark .screen-bg, .dark .screen, .dark .top-bar {
+    -fx-background-color: #000000;
+}
+
+.dark .top-bar {
+    -fx-border-color: transparent transparent #38383A transparent;
+}
+
+.dark .nav-pane {
+    -fx-background-color: #1C1C1E;
+    -fx-border-color: transparent #38383A transparent transparent;
+}
+
+.dark .large-title, .dark .title, .dark .bold-text, .dark .body-text, .dark .nav-button {
+    -fx-text-fill: #FFFFFF;
+}
+
+.dark .nav-button-selected {
+    -fx-background-color: rgba(10,132,255,0.30);
+    -fx-text-fill: #0A84FF;
+}
+
+.dark .card, .dark .inset-card, .dark .stat-card, .dark .inset-list {
+    -fx-background-color: #1C1C1E;
+}
+
+.dark .inset-list, .dark .row-table {
+    -fx-border-color: #38383A;
+}
+
+.dark .row-table, .dark .row-table > .viewport {
+    -fx-background-color: #1C1C1E;
+}
+
+.dark .row-separator {
+    -fx-background-color: #38383A;
+}
+
+.dark .table-group {
+    -fx-background-color: #2C2C2E;
+    -fx-text-fill: #EBEBF5;
+}
+
+.dark .table-row-selectable:hover {
+    -fx-background-color: #2C2C2E;
+}
+
+.dark .table-row-selected, .dark .table-row-selected:hover {
+    -fx-background-color: rgba(10,132,255,0.30);
+}
+
+.dark .caption, .dark .stat-caption, .dark .column-header, .dark .section-label, .dark .empty-state, .dark .gray-text {
+    -fx-text-fill: #8E8E93;
+}
+
+.dark .step-pill-active, .dark .primary-button {
+    -fx-text-fill: white;
+}
