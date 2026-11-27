@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:controller="ui.StaffStudentsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+    <Label styleClass="title" text="All students" />
+    <ListView fx:id="studentsList" id="staff-students-list" styleClass="inset-list" />
+    <Label fx:id="detailLabel" wrapText="true" />
+    <VBox fx:id="actionsBox" managed="false" spacing="12" visible="false">
+        <Label fx:id="actionsLabel" styleClass="section-label" />
+        <Button id="staff-student-status-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStatus" styleClass="plain-button" text="Update Status" />
+        <Button id="staff-student-advisor-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onAdvisor" styleClass="plain-button" text="Assign Advisor" />
+    </VBox>
+</VBox>
