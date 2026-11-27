@@ -6,5 +6,5 @@
 
 <VBox fx:controller="ui.StudentNotificationsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="Notifications" />
-    <ListView fx:id="notificationsList" styleClass="inset-list" />
+    <ListView fx:id="notificationsList" styleClass="inset-list" VBox.vgrow="ALWAYS" />
 </VBox>
