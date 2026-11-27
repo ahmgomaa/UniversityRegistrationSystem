@@ -7,9 +7,9 @@
 <VBox fx:controller="ui.StaffStatusController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="Update status" />
     <Label styleClass="section-label" text="STUDENT" />
-    <ComboBox fx:id="studentBox" id="staff-student-box" maxWidth="Infinity" />
+    <ComboBox fx:id="studentBox" id="staff-student-box" promptText="Select a student" maxWidth="Infinity" />
     <Label styleClass="section-label" text="NEW STATUS (REGISTRAR ONLY)" />
-    <ComboBox fx:id="statusBox" id="staff-status-box" maxWidth="Infinity" />
+    <ComboBox fx:id="statusBox" id="staff-status-box" promptText="Select a status" maxWidth="Infinity" />
     <Button id="staff-update-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onUpdate" styleClass="primary-button" text="Update Status" />
     <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
 </VBox>

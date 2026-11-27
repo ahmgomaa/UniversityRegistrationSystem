@@ -7,7 +7,7 @@
 <VBox fx:controller="ui.StaffRosterController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="Section roster" />
     <Label styleClass="section-label" text="SECTION (REGISTRAR ONLY)" />
-    <ComboBox fx:id="sectionBox" id="staff-section-box" maxWidth="Infinity" onAction="#onSectionChosen" />
+    <ComboBox fx:id="sectionBox" id="staff-section-box" promptText="Select a section" maxWidth="Infinity" onAction="#onSectionChosen" />
     <Label styleClass="section-label" text="ROSTER" />
     <ScrollPane fx:id="rosterListScroll" id="staff-roster-list" fitToWidth="true" hbarPolicy="NEVER" minHeight="120" prefHeight="220" styleClass="row-table" VBox.vgrow="ALWAYS" />
     <Label fx:id="statusLabel" maxWidth="Infinity" wrapText="true" />
