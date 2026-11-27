@@ -13,7 +13,7 @@ import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
 
-public class RowTable extends ScrollPane {
+public class RowTable {
 
     public interface SelectionListener {
         void selected(int index);
@@ -27,13 +27,8 @@ public class RowTable extends ScrollPane {
     private SelectionListener listener;
     private boolean selectable = true;
 
-    public RowTable() {
-        getStyleClass().add("row-table");
-        setFitToWidth(true);
-        setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        setContent(box);
-        setMinHeight(120);
-        setPrefHeight(220);
+    public RowTable(ScrollPane scrollPane) {
+        scrollPane.setContent(box);
     }
 
     public void setColumns(String[] headers, double[] weights) {
