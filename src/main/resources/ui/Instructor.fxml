@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ui.RowTable?>
 
 <VBox fx:controller="ui.InstructorController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="Record grades" />
@@ -26,7 +27,7 @@
     </VBox>
     <VBox fx:id="rosterPane" spacing="12" VBox.vgrow="ALWAYS">
         <Label styleClass="section-label" text="ROSTER" />
-        <ListView fx:id="rosterList" id="instructor-roster-list" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+        <RowTable fx:id="rosterList" id="instructor-roster-list" VBox.vgrow="ALWAYS" />
     </VBox>
     <VBox fx:id="gradePane" managed="false" spacing="12" visible="false">
         <Label styleClass="section-label" text="RECORD GRADE" />
