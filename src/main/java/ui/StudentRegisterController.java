@@ -92,7 +92,7 @@ public class StudentRegisterController {
         this.parent = parent;
         sectionsList.setColumns(
                 new String[] {"CODE", "COURSE", "NO.", "INSTRUCTOR", "SCHEDULE", "SEATS"},
-                new double[] {3, 4, 1.5, 3, 5, 2});
+                new double[] {1.3, 3.4, 0.5, 1.5, 4.0, 0.8});
         ArrayList<Semester> semesters = context.getStore().getSemesters();
         semesterBox.setItems(FXCollections.observableArrayList(semesters));
         if (!semesters.isEmpty()) {
