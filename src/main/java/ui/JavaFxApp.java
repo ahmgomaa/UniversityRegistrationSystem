@@ -6,17 +6,7 @@ import data.DataStore;
 import db.DatabaseConnection;
 import db.SchemaInitializer;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.AcademicStaff;
 import model.Instructor;
@@ -35,7 +25,7 @@ public class JavaFxApp extends Application {
 
     private AppContext context;
     private Stage stage;
-    private BorderPane root;
+    private ShellController shell;
     private boolean darkAppearance;
     private User signedInUser;
 
@@ -56,9 +46,10 @@ public class JavaFxApp extends Application {
             return;
         }
         stage.setTitle("University Registration System");
-        root = new BorderPane();
-        UiKit.applyGroupedBackground(root);
-        Scene scene = new Scene(root, 1000, 680);
+        Fxml<ShellController> shellScreen = Fxml.load("Shell");
+        shell = shellScreen.getController();
+        shell.init(this);
+        Scene scene = new Scene(shellScreen.getRoot(), 1000, 680);
         stage.setScene(scene);
         showLogin();
         stage.show();
@@ -89,7 +80,7 @@ public class JavaFxApp extends Application {
         return new AppContext(store, notifications, registration, grading, graduation, reports);
     }
 
-    private void toggleAppearance() {
+    public void toggleAppearance() {
         darkAppearance = !darkAppearance;
         if (darkAppearance) {
             Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
@@ -98,57 +89,41 @@ public class JavaFxApp extends Application {
         }
     }
 
-    private HBox topBar(String title) {
-        Label titleLabel = UiKit.largeTitle(title);
-        Button appearanceButton = UiKit.plainButton(darkAppearance ? "Light" : "Dark");
-        appearanceButton.setMaxWidth(Region.USE_PREF_SIZE);
-        appearanceButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                toggleAppearance();
-                appearanceButton.setText(darkAppearance ? "Light" : "Dark");
-            }
-        });
-        HBox bar = new HBox(12, titleLabel);
-        HBox.setHgrow(titleLabel, Priority.ALWAYS);
-        bar.getChildren().add(appearanceButton);
-        bar.setPadding(new Insets(16, 20, 12, 20));
-        bar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        bar.setStyle("-fx-background-color: " + UiKit.GROUPED_BG + ";"
-                + "-fx-border-color: transparent transparent "
-                + UiKit.SEPARATOR + " transparent;"
-                + "-fx-border-width: 0 0 1 0;");
-        return bar;
+    public boolean isDarkAppearance() {
+        return darkAppearance;
     }
 
     private void setScreen(String title, javafx.scene.Node content) {
-        root.setTop(topBar(title));
-        root.setCenter(content);
-        root.setLeft(null);
+        shell.show(title, content, darkAppearance);
     }
 
     public void showLogin() {
         signedInUser = null;
-        LoginView view = new LoginView(context, this);
-        setScreen("University Registration", view.build());
+        Fxml<LoginController> screen = Fxml.load("Login");
+        screen.getController().init(context, this);
+        setScreen("University Registration", screen.getRoot());
     }
 
     public void showBrowse() {
-        BrowseView view = new BrowseView(context, this);
-        setScreen("Browse Sections", view.build());
+        Fxml<BrowseController> screen = Fxml.load("Browse");
+        screen.getController().init(context, this);
+        setScreen("Browse Sections", screen.getRoot());
     }
 
     public void signedIn(User user) {
         signedInUser = user;
         if (user instanceof Student) {
-            StudentView view = new StudentView(context, this, (Student) user);
-            setScreen("Student", view.build());
+            Fxml<StudentController> screen = Fxml.load("Student");
+            screen.getController().init(context, this, (Student) user);
+            setScreen("Student", screen.getRoot());
         } else if (user instanceof Instructor) {
-            InstructorView view = new InstructorView(context, this, (Instructor) user);
-            setScreen("Instructor", view.build());
+            Fxml<InstructorController> screen = Fxml.load("Instructor");
+            screen.getController().init(context, this, (Instructor) user);
+            setScreen("Instructor", screen.getRoot());
         } else if (user instanceof AcademicStaff) {
-            StaffView view = new StaffView(context, this, (AcademicStaff) user);
-            setScreen("Academic Staff", view.build());
+            Fxml<StaffController> screen = Fxml.load("Staff");
+            screen.getController().init(context, this, (AcademicStaff) user);
+            setScreen("Academic Staff", screen.getRoot());
         }
     }
 
