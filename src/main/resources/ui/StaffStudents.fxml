@@ -6,8 +6,22 @@
 
 <VBox fx:controller="ui.StaffStudentsController" spacing="12" styleClass="screen" stylesheets="@ui.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <Label styleClass="title" text="All students" />
-    <ListView fx:id="studentsList" id="staff-students-list" styleClass="inset-list" />
-    <Label fx:id="detailLabel" wrapText="true" />
+    <HBox spacing="12">
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="totalValue" styleClass="stat-value, accent-text" text="0" />
+            <Label styleClass="stat-caption" text="STUDENTS" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="activeValue" styleClass="stat-value, green-text" text="0" />
+            <Label styleClass="stat-caption" text="ACTIVE" />
+        </VBox>
+        <VBox maxWidth="Infinity" spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
+            <Label fx:id="probationValue" styleClass="stat-value, orange-text" text="0" />
+            <Label styleClass="stat-caption" text="ON PROBATION" />
+        </VBox>
+    </HBox>
+    <ListView fx:id="studentsList" id="staff-students-list" styleClass="inset-list" VBox.vgrow="ALWAYS" />
+    <Label fx:id="detailLabel" managed="false" maxWidth="Infinity" styleClass="card" visible="false" wrapText="true" />
     <VBox fx:id="actionsBox" managed="false" spacing="12" visible="false">
         <Label fx:id="actionsLabel" styleClass="section-label" />
         <Button id="staff-student-status-button" maxWidth="Infinity" mnemonicParsing="false" onAction="#onStatus" styleClass="plain-button" text="Update Status" />
